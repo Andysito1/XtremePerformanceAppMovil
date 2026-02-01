@@ -16,16 +16,19 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F3C88),
-        title: const Text("Xtreme Performance"),
+        title: const Text(
+          "Xtreme Performance",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
 
-      // ================= DRAWER (NO TOCADO) =================
+      // drawer del menú
       drawer: Drawer(
         child: Container(
           color: const Color(0xFF1F3C88),
           child: Column(
             children: [
-              // HEADER
+              // header
               Container(
                 color: const Color(0xFFE53935),
                 padding: const EdgeInsets.symmetric(
@@ -49,7 +52,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            "Juan Pérez",
+                            "Andy Sullcaray",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
@@ -108,8 +111,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          "AQUI_VA_EL_LINK_DE_LA_IMAGEN_DEL_VEHICULO",
-                          // AQUÍ VA EL LINK REAL DE LA IMAGEN
+                          "imagen del vehículo",
+                          // imagen del vehiculo
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -155,11 +158,11 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
         ),
       ),
 
-      // ================= BODY (SEGUIMIENTO DEL SERVICIO) =================
+      // seguimiento del servicio
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             const Text(
               "Seguimiento del Servicio",
@@ -237,7 +240,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
   }
 }
 
-// ================= DRAWER ITEM =================
+// drawer
 Widget _drawerItem(
   BuildContext context, {
   required IconData icon,
@@ -264,7 +267,7 @@ Widget _drawerItem(
   );
 }
 
-// ================= ETAPA DEL SERVICIO =================
+// etapa del servicio
 Widget _etapaServicio(
   BuildContext context, {
   required IconData icon,

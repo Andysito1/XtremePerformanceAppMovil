@@ -16,7 +16,10 @@ class _HistorialPageState extends State<HistorialPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F3C88),
-        title: const Text("Xtreme Performance"),
+        title: const Text(
+          "Xtreme Performance",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
 
       // menú desplegable
@@ -33,11 +36,11 @@ class _HistorialPageState extends State<HistorialPage> {
                   vertical: 24,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: .start,
                         children: const [
                           Text(
                             "Xtreme Performance",
@@ -49,7 +52,7 @@ class _HistorialPageState extends State<HistorialPage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            "Juan Pérez",
+                            "Andy Sullcaray",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
@@ -154,11 +157,30 @@ class _HistorialPageState extends State<HistorialPage> {
           ),
         ),
       ),
+
+      // Historial del vehiculo
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const Text(
+              "Historial del vehiculo",
+              style: TextStyle(fontSize: 20, fontWeight: .bold),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              "Toyota Corolla 2018 - ABC-1234",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-// ================= DRAWER ITEM =================
+// drawer
 Widget _drawerItem(
   BuildContext context, {
   required IconData icon,
