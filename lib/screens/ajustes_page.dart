@@ -1,5 +1,7 @@
 // Ajustes
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -155,6 +157,95 @@ class _AjustesPageState extends State<AjustesPage> {
               ),
             ],
           ),
+        ),
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const Text(
+              "Ajustes",
+              style: TextStyle(fontSize: 20, fontWeight: .bold),
+            ),
+
+            const SizedBox(height: 6),
+
+            const Text(
+              "Configuración de la aplicación",
+              style: TextStyle(color: Colors.grey),
+            ),
+
+            const SizedBox(height: 20),
+
+            const Text(
+              "CUENTA",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: .bold,
+                color: Colors.grey,
+              ),
+            ),
+
+            // const TextField(
+            //   decoration: InputDecoration(
+            //     filled: true,
+            //     fillColor: const Color(0xFFF2F2F2),
+            //     border: OutlineInputBorder(),
+            //   ),
+            // ),
+            const SizedBox(height: 10),
+
+            const Text(
+              "NOTIFICACIONES",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: .bold,
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // acá iran los cuadros
+
+            // const SizedBox(height: 10),
+            const Text(
+              "APARIENCIA",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: .bold,
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Container(),
+
+            // asdasas
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF53935),
+                  shape: RoundedRectangleBorder(borderRadius: .circular(10)),
+                ),
+                onPressed: () {
+                  context.go("/login");
+                },
+                child: const Text(
+                  "Cerrar sesión",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: .bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

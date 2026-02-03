@@ -219,7 +219,6 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
               fecha: "Por iniciar",
               ruta: "/final",
             ),
-
             const SizedBox(height: 16),
 
             Container(

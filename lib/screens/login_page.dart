@@ -24,7 +24,20 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: .center,
               children: [
                 // Logo
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
+                const Text(
+                  "Xtreme Performance", // FALTABA COMA AQUÍ
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Seguimiento de Vehículo',
+                  style: TextStyle(fontSize: 16, color: Color(0xFF666666)),
+                ),
 
                 // Card login
                 Container(

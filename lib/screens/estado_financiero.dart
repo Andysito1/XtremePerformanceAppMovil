@@ -157,6 +157,25 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
           ),
         ),
       ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const Text(
+              "Estado financiero",
+              style: TextStyle(fontSize: 20, fontWeight: .bold),
+            ),
+
+            const SizedBox(height: 6),
+            const Text(
+              "Toyota Corolla 2018 - ABC-1234",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
