@@ -36,11 +36,11 @@ class _HistorialPageState extends State<HistorialPage> {
                   vertical: 24,
                 ),
                 child: Row(
-                  crossAxisAlignment: .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
                             "Xtreme Performance",

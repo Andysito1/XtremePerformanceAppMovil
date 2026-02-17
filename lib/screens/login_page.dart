@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/auth_service.dart'; 
+import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,9 +17,6 @@ class _LoginPageState extends State<LoginPage> {
   // Controladores de los TextField
   final TextEditingController _usuarioController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Servicio de autenticación
-  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -150,17 +147,23 @@ class _LoginPageState extends State<LoginPage> {
                               return;
                             }
 
-                            final token = await AuthService().login(_usuarioController.text, _passwordController.text);
+                            final token = await AuthService().login(
+                              _usuarioController.text,
+                              _passwordController.text,
+                            );
 
                             if (token != null) {
-                              final prefs = await SharedPreferences.getInstance();
+                              final prefs =
+                                  await SharedPreferences.getInstance();
                               await prefs.setString('token', token);
                               context.go("/seguimiento");
                             } else {
                               // Error de login
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Usuario o contraseña incorrectos"),
+                                  content: Text(
+                                    "Usuario o contraseña incorrectos",
+                                  ),
                                 ),
                               );
                             }

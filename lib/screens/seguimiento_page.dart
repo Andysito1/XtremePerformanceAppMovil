@@ -26,7 +26,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
   Future<void> _cargarVehiculos() async {
     try {
       final vehiculosJson = await VehService().obtenerMisVehiculos();
-      final vehiculosList = (vehiculosJson as List)
+      final vehiculosList = vehiculosJson
           .map((v) => VehiculoModel.fromJson(v))
           .toList();
 
@@ -208,139 +208,136 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
         ),
       ),
 
-      body: SingleChildScrollView(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // SELECTOR DE VEHÍCULO
-            GestureDetector(
-              onTap: () => _mostrarSelectorVehiculo(context),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D1B3E),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.red, width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        vehiculo.imagen ??
-                            "https://via.placeholder.com/55x55.png?text=Auto",
+        children: [
+          // SELECTOR DE VEHÍCULO
+          GestureDetector(
+            onTap: () => _mostrarSelectorVehiculo(context),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D1B3E),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.red, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      vehiculo.imagen ??
+                          "https://via.placeholder.com/55x55.png?text=Auto",
+                      width: 55,
+                      height: 55,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
                         width: 55,
                         height: 55,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 55,
-                          height: 55,
-                          color: Colors.white24,
-                          child: const Icon(
-                            Icons.directions_car,
-                            color: Colors.white,
-                          ),
+                        color: Colors.white24,
+                        child: const Icon(
+                          Icons.directions_car,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                          Text(
-                            "Placa: ${vehiculo.placa}",
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
+                        ),
+                        Text(
+                          "Placa: ${vehiculo.placa}",
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
                     ),
-                    const Icon(Icons.keyboard_arrow_down, color: Colors.red),
-                  ],
-                ),
+                  ),
+                  const Icon(Icons.keyboard_arrow_down, color: Colors.red),
+                ],
               ),
             ),
+          ),
 
-            const Text(
-              "Seguimiento del Servicio",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          const Text(
+            "Seguimiento del Servicio",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Estado actual de tu vehículo",
+            style: TextStyle(color: Colors.grey),
+          ),
+
+          const SizedBox(height: 20),
+
+          _etapaServicio(
+            context,
+            icon: Icons.assignment_turned_in,
+            color: Colors.green,
+            titulo: "Diagnóstico",
+            descripcion: "Inspección inicial y diagnóstico del vehículo",
+            estado: "Completado",
+            fecha: "2 de Enero, 2026 - 09:30",
+            ruta: "/diagnostico",
+          ),
+
+          _etapaServicio(
+            context,
+            icon: Icons.build,
+            color: Colors.orange,
+            titulo: "Reparación",
+            descripcion: "Reparación de componentes identificados",
+            estado: "En progreso",
+            fecha: "3 de Enero, 2026 - 10:15",
+            ruta: "/reparacion",
+          ),
+
+          _etapaServicio(
+            context,
+            icon: Icons.science,
+            color: Colors.grey,
+            titulo: "Pruebas",
+            descripcion: "Pruebas de funcionamiento y calidad",
+            estado: "Pendiente",
+            fecha: "Por iniciar",
+            ruta: "/pruebas",
+          ),
+
+          _etapaServicio(
+            context,
+            icon: Icons.check_circle,
+            color: Colors.grey,
+            titulo: "Finalización",
+            descripcion: "Revisión final y entrega del vehículo",
+            estado: "Pendiente",
+            fecha: "Por iniciar",
+            ruta: "/final",
+          ),
+
+          const SizedBox(height: 16),
+
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(height: 6),
-            const Text(
-              "Estado actual de tu vehículo",
-              style: TextStyle(color: Colors.grey),
+            child: const Text(
+              "Nota: Puedes hacer clic en cada etapa para ver más detalles y aprobar el avance del servicio.",
+              style: TextStyle(fontSize: 12),
             ),
-
-            const SizedBox(height: 20),
-
-            _etapaServicio(
-              context,
-              icon: Icons.assignment_turned_in,
-              color: Colors.green,
-              titulo: "Diagnóstico",
-              descripcion: "Inspección inicial y diagnóstico del vehículo",
-              estado: "Completado",
-              fecha: "2 de Enero, 2026 - 09:30",
-              ruta: "/diagnostico",
-            ),
-
-            _etapaServicio(
-              context,
-              icon: Icons.build,
-              color: Colors.orange,
-              titulo: "Reparación",
-              descripcion: "Reparación de componentes identificados",
-              estado: "En progreso",
-              fecha: "3 de Enero, 2026 - 10:15",
-              ruta: "/reparacion",
-            ),
-
-            _etapaServicio(
-              context,
-              icon: Icons.science,
-              color: Colors.grey,
-              titulo: "Pruebas",
-              descripcion: "Pruebas de funcionamiento y calidad",
-              estado: "Pendiente",
-              fecha: "Por iniciar",
-              ruta: "/pruebas",
-            ),
-
-            _etapaServicio(
-              context,
-              icon: Icons.check_circle,
-              color: Colors.grey,
-              titulo: "Finalización",
-              descripcion: "Revisión final y entrega del vehículo",
-              estado: "Pendiente",
-              fecha: "Por iniciar",
-              ruta: "/final",
-            ),
-
-            const SizedBox(height: 16),
-
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text(
-                "Nota: Puedes hacer clic en cada etapa para ver más detalles y aprobar el avance del servicio.",
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
