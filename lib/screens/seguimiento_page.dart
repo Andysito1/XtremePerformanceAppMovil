@@ -1,7 +1,9 @@
-// Seguimiento del vehiculo
+// seguimiento_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../services/veh_service.dart';
+import '../models/veh_model.dart';
 
 class SeguimientoPage extends StatefulWidget {
   const SeguimientoPage({super.key});
@@ -11,26 +13,53 @@ class SeguimientoPage extends StatefulWidget {
 }
 
 class _SeguimientoPageState extends State<SeguimientoPage> {
-  // ===== VEHÍCULOS MOCK (LUEGO VIENEN DEL API CON DIO) =====
-  final List<Map<String, String>> _vehiculos = [
-    {
-      "marca": "Toyota Corolla",
-      "anio": "2018",
-      "placa": "ABC-1234",
-      "imagen": "URL_IMAGEN_VEHICULO_AQUI", // 👈 AQUÍ VA EL LINK DE LA IMAGEN
-    },
-    {
-      "marca": "Hyundai Tucson",
-      "anio": "2020",
-      "placa": "XYZ-456",
-      "imagen": "URL_IMAGEN_VEHICULO_AQUI", // 👈 AQUÍ VA EL LINK DE LA IMAGEN
-    },
-  ];
-
+  List<VehiculoModel> _vehiculos = [];
   int _vehiculoSeleccionado = 0;
+  bool _cargando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarVehiculos();
+  }
+
+  Future<void> _cargarVehiculos() async {
+    try {
+      final vehiculosJson = await VehService().obtenerMisVehiculos();
+      final vehiculosList = (vehiculosJson as List)
+          .map((v) => VehiculoModel.fromJson(v))
+          .toList();
+
+      setState(() {
+        _vehiculos = vehiculosList;
+        _cargando = false;
+      });
+    } catch (e) {
+      print("Error al cargar vehículos: $e");
+      setState(() {
+        _cargando = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_cargando) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_vehiculos.isEmpty) {
+      return const Scaffold(
+        body: Center(
+          child: Text("No tienes vehículos registrados"),
+        ),
+      );
+    }
+
+    final vehiculo = _vehiculos[_vehiculoSeleccionado];
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F3C88),
@@ -40,7 +69,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
         ),
       ),
 
-      // drawer del menú
+      // drawer
       drawer: Drawer(
         child: Container(
           color: const Color(0xFF1F3C88),
@@ -49,18 +78,15 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
               // header
               Container(
                 color: const Color(0xFFE53935),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 24,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
+                        children: [
+                          const Text(
                             "Xtreme Performance",
                             style: TextStyle(
                               color: Colors.white,
@@ -68,8 +94,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 4),
-                          Text(
+                          const SizedBox(height: 4),
+                          const Text(
                             "Andy Sullcaray",
                             style: TextStyle(
                               color: Colors.white70,
@@ -108,7 +134,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
               ),
               _drawerItem(
                 context,
-                icon: Icons.settings,
+                icon: Icons.notifications,
                 text: "Notificaciones",
                 route: "/notificaciones",
               ),
@@ -121,7 +147,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
 
               const Spacer(),
 
-              // VEHÍCULO (drawer)
+              // VEHÍCULO seleccionado en drawer
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Container(
@@ -135,7 +161,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          "URL_IMAGEN_VEHICULO_AQUI", // 👈 AQUÍ VA EL LINK DE LA IMAGEN
+                          vehiculo.imagen ??
+                              "https://via.placeholder.com/50x50.png?text=Auto",
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -153,19 +180,19 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "Toyota Corolla 2018",
-                            style: TextStyle(
+                            "${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio}",
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            "Placa: ABC-1234",
-                            style: TextStyle(
+                            "Placa: ${vehiculo.placa}",
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
                             ),
@@ -181,13 +208,12 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
         ),
       ),
 
-      // seguimiento del servicio
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== SELECTOR DE VEHÍCULO (AGREGADO) =====
+            // SELECTOR DE VEHÍCULO
             GestureDetector(
               onTap: () => _mostrarSelectorVehiculo(context),
               child: Container(
@@ -203,8 +229,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
-                        _vehiculos[_vehiculoSeleccionado]["imagen"]!,
-                        // 👈 AQUÍ VA EL LINK DE LA IMAGEN DEL VEHÍCULO
+                        vehiculo.imagen ??
+                            "https://via.placeholder.com/55x55.png?text=Auto",
                         width: 55,
                         height: 55,
                         fit: BoxFit.cover,
@@ -225,14 +251,14 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "${_vehiculos[_vehiculoSeleccionado]["marca"]} ${_vehiculos[_vehiculoSeleccionado]["anio"]}",
+                            "${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            "Placa: ${_vehiculos[_vehiculoSeleccionado]["placa"]}",
+                            "Placa: ${vehiculo.placa}",
                             style: const TextStyle(color: Colors.white70),
                           ),
                         ],
@@ -244,7 +270,6 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
               ),
             ),
 
-            // ===== TU CÓDIGO ORIGINAL CONTINÚA =====
             const Text(
               "Seguimiento del Servicio",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -300,6 +325,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
               fecha: "Por iniciar",
               ruta: "/final",
             ),
+
             const SizedBox(height: 16),
 
             Container(
@@ -319,7 +345,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
     );
   }
 
-  // ===== BOTTOM SHEET SELECTOR DE VEHÍCULO =====
+  // BOTTOM SHEET SELECTOR DE VEHÍCULO
   void _mostrarSelectorVehiculo(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -355,8 +381,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          v["imagen"]!,
-                          // 👈 AQUÍ VA EL LINK DE LA IMAGEN DEL VEHÍCULO
+                          v.imagen ?? "https://via.placeholder.com/50x50.png?text=Auto",
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -374,13 +399,11 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${v["marca"]} ${v["anio"]}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              "${v.marca} ${v.modelo} ${v.anio}",
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              "Placa: ${v["placa"]}",
+                              "Placa: ${v.placa}",
                               style: const TextStyle(color: Colors.red),
                             ),
                           ],
@@ -400,7 +423,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
   }
 }
 
-// ===== drawer item =====
+// drawer item
 Widget _drawerItem(
   BuildContext context, {
   required IconData icon,
@@ -427,7 +450,7 @@ Widget _drawerItem(
   );
 }
 
-// ===== etapa del servicio =====
+// etapa del servicio
 Widget _etapaServicio(
   BuildContext context, {
   required IconData icon,
@@ -465,16 +488,10 @@ Widget _etapaServicio(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                Text(titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(descripcion, style: const TextStyle(fontSize: 12)),
                 const SizedBox(height: 4),
-                Text(
-                  fecha,
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
-                ),
+                Text(fecha, style: const TextStyle(fontSize: 11, color: Colors.grey)),
               ],
             ),
           ),

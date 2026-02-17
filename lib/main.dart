@@ -11,8 +11,19 @@ import 'package:xtreme_performance/screens/notificaciones_page.dart';
 import 'package:xtreme_performance/screens/pruebas_page.dart';
 import 'package:xtreme_performance/screens/reparacion_page.dart';
 import 'package:xtreme_performance/screens/seguimiento_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/dio_client.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔹 Inicializamos el token en los headers si existe
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString("token");
+  if (token != null) {
+    DioClient.dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
   runApp(const MyApp());
 }
 

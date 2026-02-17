@@ -1,12 +1,22 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DioClient {
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'https://digi-api.com/api/v1' // Aqui va la ruta
-      headers: {'Content-Type': 'application/json'},
+      baseUrl: "http://127.0.0.1:8000/api", 
+      // 10.0.2.2 si usas emulador Android
+      headers: {
+        "Accept": "application/json",
+      },
     ),
   );
 
-  Future<dynamic> get(String s) async {}
+  static Future<void> setTokenHeader() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token != null) {
+      dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+  }
 }

@@ -1,15 +1,9 @@
-import 'package:dio/dio.dart';
-import 'package:xtreme_performance/models/veh_model.dart';
-import 'package:xtreme_performance/utils/dio_client.dart';
+import '../utils/dio_client.dart';
 
 class VehService {
-  final DioClient _dio = DioClient();
-
-  Future<List<VehiculoModel>> obtenerVehiculos() async {
-    final response = await _dio.get("/api/vehiculos");
-
-    return (response.data as List)
-        .map((e) => VehiculoModel.fromJson(e))
-        .toList();
+  Future<List<dynamic>> obtenerMisVehiculos() async {
+    await DioClient.setTokenHeader(); // 🔹 aseguramos que el token esté
+    final response = await DioClient.dio.get("/mis-vehiculos");
+    return response.data;
   }
 }

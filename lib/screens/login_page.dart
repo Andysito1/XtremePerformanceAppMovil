@@ -1,9 +1,10 @@
-// Login
+// login_page.dart
 
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +14,20 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // Controladores de los TextField
+  final TextEditingController _usuarioController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Servicio de autenticación
+  final AuthService _authService = AuthService();
+
+  @override
+  void dispose() {
+    _usuarioController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,12 +36,12 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
-              mainAxisAlignment: .center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo
+                // Logo y título
                 const SizedBox(height: 20),
                 const Text(
-                  "Xtreme Performance", // FALTABA COMA AQUÍ
+                  "Xtreme Performance",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -39,7 +54,9 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(fontSize: 16, color: Color(0xFF666666)),
                 ),
 
-                // Card login
+                const SizedBox(height: 24),
+
+                // Card de login
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -54,23 +71,24 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   child: Column(
-                    crossAxisAlignment: .stretch,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Usuario / Correo
                       const Text(
                         "Usuario / Correo",
-                        style: TextStyle(fontWeight: .w600),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 6),
                       TextField(
+                        controller: _usuarioController,
                         decoration: InputDecoration(
                           hintText: "usuario@gmail.com",
                           prefixIcon: const Icon(Icons.person_outline),
                           filled: true,
                           fillColor: const Color(0xFFF2F2F2),
                           border: OutlineInputBorder(
-                            borderRadius: .circular(10),
-                            borderSide: .none,
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                       ),
@@ -80,10 +98,11 @@ class _LoginPageState extends State<LoginPage> {
                       // Contraseña
                       const Text(
                         "Contraseña",
-                        style: TextStyle(fontWeight: .w600),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 6),
                       TextField(
+                        controller: _passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           hintText: "******",
@@ -91,8 +110,8 @@ class _LoginPageState extends State<LoginPage> {
                           filled: true,
                           fillColor: const Color(0xFFF2F2F2),
                           border: OutlineInputBorder(
-                            borderRadius: .circular(10),
-                            borderSide: .none,
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                       ),
@@ -102,31 +121,56 @@ class _LoginPageState extends State<LoginPage> {
                       // Texto informativo
                       const Text(
                         "Las credenciales son proporcionadas por \nXtreme Performance",
-                        textAlign: .center,
+                        textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
 
                       const SizedBox(height: 20),
 
-                      // Boton
+                      // Botón de login
                       SizedBox(
                         height: 48,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE53935),
                             shape: RoundedRectangleBorder(
-                              borderRadius: .circular(10),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () {
-                            context.go("/seguimiento");
+                          onPressed: () async {
+                            final correo = _usuarioController.text.trim();
+                            final password = _passwordController.text.trim();
+
+                            if (correo.isEmpty || password.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Completa todos los campos"),
+                                ),
+                              );
+                              return;
+                            }
+
+                            final token = await AuthService().login(_usuarioController.text, _passwordController.text);
+
+                            if (token != null) {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setString('token', token);
+                              context.go("/seguimiento");
+                            } else {
+                              // Error de login
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Usuario o contraseña incorrectos"),
+                                ),
+                              );
+                            }
                           },
                           child: const Text(
                             "Iniciar sesión",
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.white,
-                              fontWeight: .bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -134,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       const SizedBox(height: 14),
 
-                      // Olvido contraseña
+                      // Olvido de contraseña
                       TextButton(
                         onPressed: () {},
                         child: const Text(
