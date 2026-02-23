@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
+import '../utils/dio_client.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -147,6 +148,18 @@ class _LoginPageState extends State<LoginPage> {
                               return;
                             }
 
+                            // Validación de formato de correo
+                            if (!correo.contains('@')) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "El correo debe contener un '@'",
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
                             final token = await AuthService().login(
                               _usuarioController.text,
                               _passwordController.text,
@@ -156,6 +169,11 @@ class _LoginPageState extends State<LoginPage> {
                               final prefs =
                                   await SharedPreferences.getInstance();
                               await prefs.setString('token', token);
+
+                              // Configurar el token en Dio para las peticiones inmediatas
+                              DioClient.dio.options.headers['Authorization'] =
+                                  'Bearer $token';
+
                               context.go("/seguimiento");
                             } else {
                               // Error de login

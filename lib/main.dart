@@ -6,7 +6,7 @@ import 'package:xtreme_performance/screens/estado_financiero.dart';
 import 'package:xtreme_performance/screens/finalizacion_page.dart';
 import 'package:xtreme_performance/screens/historial_vehiculo.dart';
 import 'package:xtreme_performance/screens/login_page.dart';
-import 'package:xtreme_performance/screens/my_home_page.dart';
+import 'package:xtreme_performance/screens/splash_screen.dart';
 import 'package:xtreme_performance/screens/notificaciones_page.dart';
 import 'package:xtreme_performance/screens/pruebas_page.dart';
 import 'package:xtreme_performance/screens/reparacion_page.dart';
@@ -33,7 +33,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
-        return const MyHomePage(title: "Xtreme Performance");
+        return const SplashScreen();
       },
       routes: <RouteBase>[
         GoRoute(
@@ -115,6 +115,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(routerConfig: _router);
+    return MaterialApp.router(
+      routerConfig: _router,
+      debugShowCheckedModeBanner: false,
+    );
   }
 }
