@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:xtreme_performance/models/usuario_model.dart';
 import '../services/veh_service.dart';
 import '../models/veh_model.dart';
+import '../services/usuario_service.dart';
 
 class SeguimientoPage extends StatefulWidget {
   const SeguimientoPage({super.key});
@@ -14,6 +16,7 @@ class SeguimientoPage extends StatefulWidget {
 
 class _SeguimientoPageState extends State<SeguimientoPage> {
   List<VehiculoModel> _vehiculos = [];
+  List<UsuarioModel> _usuarios = [];
   int _vehiculoSeleccionado = 0;
   bool _cargando = true;
 
@@ -21,6 +24,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
   void initState() {
     super.initState();
     _cargarVehiculos();
+    _usuarioInformacion();
   }
 
   Future<void> _cargarVehiculos() async {
@@ -42,6 +46,25 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
     }
   }
 
+  Future<void> _usuarioInformacion() async {
+    try {
+      final usuariosJson = await UsuarioService().usuarioInfo();
+      final usuariosList = usuariosJson
+          .map((v) => UsuarioModel.fromJson(v))
+          .toList();
+
+      setState(() {
+        _usuarios = usuariosList;
+        _cargando = false;
+      });
+    } catch (e) {
+      print("Error al cargar el usuario $e");
+      setState(() {
+        _cargando = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
@@ -57,6 +80,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
         ),
       );
     }
+
+    final usuario = _usuarios;
 
     final vehiculo = _vehiculos[_vehiculoSeleccionado];
 
@@ -95,8 +120,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            "Andy Sullcaray",
+                          Text(
+                            "Andy",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,

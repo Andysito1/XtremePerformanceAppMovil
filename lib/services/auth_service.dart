@@ -16,7 +16,6 @@ class AuthService {
       final token = response.data["token"];
 
       if (token != null) {
-        // 🔹 Guardamos token en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
       }
