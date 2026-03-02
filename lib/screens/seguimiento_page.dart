@@ -6,6 +6,8 @@ import 'package:xtreme_performance/models/usuario_model.dart';
 import '../services/veh_service.dart';
 import '../models/veh_model.dart';
 import '../services/usuario_service.dart';
+import '../services/seguimiento_service.dart';
+import '../models/etapa_model.dart';
 
 class SeguimientoPage extends StatefulWidget {
   const SeguimientoPage({super.key});
@@ -17,6 +19,7 @@ class SeguimientoPage extends StatefulWidget {
 class _SeguimientoPageState extends State<SeguimientoPage> {
   List<VehiculoModel> _vehiculos = [];
   List<UsuarioModel> _usuarios = [];
+  List<EtapaModel> _etapas = [];
   int _vehiculoSeleccionado = 0;
   bool _cargando = true;
 
@@ -37,11 +40,32 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
       setState(() {
         _vehiculos = vehiculosList;
         _cargando = false;
+
+        // Si hay vehículos, cargamos el seguimiento del primero
+        if (_vehiculos.isNotEmpty) {
+          _cargarSeguimiento(_vehiculos[0].id);
+        }
       });
     } catch (e) {
       print("Error al cargar vehículos: $e");
       setState(() {
         _cargando = false;
+      });
+    }
+  }
+
+  Future<void> _cargarSeguimiento(int vehiculoId) async {
+    // Opcional: poner loading local si se desea
+    try {
+      final etapas = await SeguimientoService().obtenerSeguimientoPorVehiculo(
+        vehiculoId,
+      );
+      setState(() {
+        _etapas = etapas;
+      });
+    } catch (e) {
+      setState(() {
+        _etapas = [];
       });
     }
   }
@@ -68,16 +92,12 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_vehiculos.isEmpty) {
       return const Scaffold(
-        body: Center(
-          child: Text("No tienes vehículos registrados"),
-        ),
+        body: Center(child: Text("No tienes vehículos registrados")),
       );
     }
 
@@ -103,7 +123,10 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
               // header
               Container(
                 color: const Color(0xFFE53935),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -121,8 +144,10 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "Andy",
-                            style: TextStyle(
+                            _usuarios.isNotEmpty
+                                ? _usuarios[0].nombre
+                                : "Cliente",
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
                             ),
@@ -187,7 +212,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
                           vehiculo.imagen ??
-                              "https://via.placeholder.com/50x50.png?text=Auto",
+                              "https://placehold.co/50x50.png?text=Auto",
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -253,7 +278,7 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
                       vehiculo.imagen ??
-                          "https://via.placeholder.com/55x55.png?text=Auto",
+                          "https://placehold.co/55x55.png?text=Auto",
                       width: 55,
                       height: 55,
                       fit: BoxFit.cover,
@@ -305,49 +330,33 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
 
           const SizedBox(height: 20),
 
-          _etapaServicio(
-            context,
-            icon: Icons.assignment_turned_in,
-            color: Colors.green,
-            titulo: "Diagnóstico",
-            descripcion: "Inspección inicial y diagnóstico del vehículo",
-            estado: "Completado",
-            fecha: "2 de Enero, 2026 - 09:30",
-            ruta: "/diagnostico",
-          ),
+          if (_etapas.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text(
+                  "No hay una orden de servicio activa para este vehículo.",
+                ),
+              ),
+            )
+          else
+            ..._etapas.map((etapa) {
+              // Lógica de colores e iconos según estado y tipo
+              final color = _getColorForStatus(etapa.estado);
+              final icon = _getIconForType(etapa.tipo);
+              final ruta = _getRouteForType(etapa.tipo);
 
-          _etapaServicio(
-            context,
-            icon: Icons.build,
-            color: Colors.orange,
-            titulo: "Reparación",
-            descripcion: "Reparación de componentes identificados",
-            estado: "En progreso",
-            fecha: "3 de Enero, 2026 - 10:15",
-            ruta: "/reparacion",
-          ),
-
-          _etapaServicio(
-            context,
-            icon: Icons.science,
-            color: Colors.grey,
-            titulo: "Pruebas",
-            descripcion: "Pruebas de funcionamiento y calidad",
-            estado: "Pendiente",
-            fecha: "Por iniciar",
-            ruta: "/pruebas",
-          ),
-
-          _etapaServicio(
-            context,
-            icon: Icons.check_circle,
-            color: Colors.grey,
-            titulo: "Finalización",
-            descripcion: "Revisión final y entrega del vehículo",
-            estado: "Pendiente",
-            fecha: "Por iniciar",
-            ruta: "/final",
-          ),
+              return _etapaServicio(
+                context,
+                icon: icon,
+                color: color,
+                titulo: etapa.titulo,
+                descripcion: etapa.descripcion,
+                estado: etapa.estado,
+                fecha: etapa.fecha ?? "Por iniciar",
+                ruta: ruta,
+              );
+            }).toList(),
 
           const SizedBox(height: 16),
 
@@ -365,6 +374,50 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
         ],
       ),
     );
+  }
+
+  // Helpers para mapear datos del backend a UI
+  Color _getColorForStatus(String estado) {
+    switch (estado.toLowerCase()) {
+      case 'completado':
+        return Colors.green;
+      case 'en progreso':
+        return Colors.orange;
+      case 'pendiente':
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getIconForType(String tipo) {
+    switch (tipo.toUpperCase()) {
+      case 'DIAGNOSTICO':
+        return Icons.assignment_turned_in;
+      case 'REPARACION':
+        return Icons.build;
+      case 'PRUEBAS':
+        return Icons.science;
+      case 'FINALIZACION':
+        return Icons.check_circle;
+      default:
+        return Icons.settings;
+    }
+  }
+
+  String _getRouteForType(String tipo) {
+    // Mapea el tipo de etapa a la ruta de GoRouter
+    switch (tipo.toUpperCase()) {
+      case 'DIAGNOSTICO':
+        return "/diagnostico";
+      case 'REPARACION':
+        return "/reparacion";
+      case 'PRUEBAS':
+        return "/pruebas";
+      case 'FINALIZACION':
+        return "/final";
+      default:
+        return "/seguimiento";
+    }
   }
 
   // BOTTOM SHEET SELECTOR DE VEHÍCULO
@@ -385,7 +438,12 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
 
               return InkWell(
                 onTap: () {
-                  setState(() => _vehiculoSeleccionado = i);
+                  setState(() {
+                    _vehiculoSeleccionado = i;
+                    _cargarSeguimiento(
+                      v.id,
+                    ); // Recargar datos al cambiar vehículo
+                  });
                   Navigator.pop(context);
                 },
                 child: Container(
@@ -403,7 +461,8 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          v.imagen ?? "https://via.placeholder.com/50x50.png?text=Auto",
+                          v.imagen ??
+                              "https://placehold.co/50x50.png?text=Auto",
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -422,7 +481,9 @@ class _SeguimientoPageState extends State<SeguimientoPage> {
                           children: [
                             Text(
                               "${v.marca} ${v.modelo} ${v.anio}",
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
                               "Placa: ${v.placa}",
@@ -483,8 +544,23 @@ Widget _etapaServicio(
   required String fecha,
   required String ruta,
 }) {
+  // Lógica de bloqueo: Si está pendiente, no permite navegar
+  final bool isLocked = estado.toLowerCase() == 'pendiente';
+
   return InkWell(
-    onTap: () => context.go(ruta),
+    onTap: isLocked
+        ? () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text("Esta etapa aún no ha iniciado."),
+                backgroundColor: Colors.grey.shade800,
+                duration: const Duration(seconds: 1),
+              ),
+            );
+          }
+        : () {
+            context.go(ruta);
+          },
     child: Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(14),
@@ -502,7 +578,9 @@ Widget _etapaServicio(
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.15),
+            backgroundColor: isLocked
+                ? Colors.grey.shade200
+                : color.withOpacity(0.15),
             child: Icon(icon, color: color),
           ),
           const SizedBox(width: 14),
@@ -510,10 +588,16 @@ Widget _etapaServicio(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  titulo,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 Text(descripcion, style: const TextStyle(fontSize: 12)),
                 const SizedBox(height: 4),
-                Text(fecha, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                Text(
+                  fecha,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
               ],
             ),
           ),
