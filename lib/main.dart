@@ -4,7 +4,7 @@ import 'package:xtreme_performance/screens/ajustes_page.dart';
 import 'package:xtreme_performance/screens/diagnostico_page.dart';
 import 'package:xtreme_performance/screens/estado_financiero.dart';
 import 'package:xtreme_performance/screens/finalizacion_page.dart';
-import 'package:xtreme_performance/screens/historial_vehiculo.dart';
+import 'package:xtreme_performance/screens/historial_page.dart';
 import 'package:xtreme_performance/screens/login_page.dart';
 import 'package:xtreme_performance/screens/splash_screen.dart';
 import 'package:xtreme_performance/screens/notificaciones_page.dart';

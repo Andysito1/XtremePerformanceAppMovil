@@ -1,4 +1,4 @@
-class UsuarioModel{
+class UsuarioModel {
   final int id;
   final int id_rol;
   final String nombre;
@@ -25,7 +25,7 @@ class UsuarioModel{
       correo: json['correo'],
       password: json['password'],
       activo: json['activo'],
-      created_at: json['created_at'],
+      created_at: DateTime.parse(json['created_at']),
     );
   }
 }

@@ -5,12 +5,14 @@ class HistorialOrdenModel {
   final String titulo;
   final String descripcion;
   final String? fechaFin;
+  final double costoTotal;
 
   HistorialOrdenModel({
     required this.id,
     required this.titulo,
     required this.descripcion,
     this.fechaFin,
+    required this.costoTotal,
   });
 
   factory HistorialOrdenModel.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,8 @@ class HistorialOrdenModel {
       titulo: json['titulo'] ?? 'Servicio sin título',
       descripcion: json['descripcion'] ?? 'No hay descripción.',
       fechaFin: fechaFormateada,
+      costoTotal:
+          double.tryParse(json['costo_total']?.toString() ?? '0.0') ?? 0.0,
     );
   }
 }
