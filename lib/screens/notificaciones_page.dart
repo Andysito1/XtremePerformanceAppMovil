@@ -1,7 +1,7 @@
-// estado financiero del cliente
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:xtreme_performance/services/pusher_config.dart';
 
 class NotificacionesPage extends StatefulWidget {
   const NotificacionesPage({super.key});
@@ -11,7 +11,46 @@ class NotificacionesPage extends StatefulWidget {
 }
 
 class _NotificacionesPageState extends State<NotificacionesPage> {
+  final PusherConfig _pusherConfig = PusherConfig();
+  String _mensaje = "Esperando datos...";
+
+    @override
+    void initState() {
+      super.initState();
+
+      // Llamada simple a la configuración
+      _pusherConfig.initPusher(
+        channelName: "mi-canal",
+        eventName: "mi-evento",
+        onEventTriggered: (event) {
+          if (!mounted) return;
+          dynamic data;
+          // 1. Verificar si event.data ya es un Mapa o si es un String
+          if (event.data is String) {
+            // Si es String (como en Android/iOS a veces), lo decodificamos
+            data = jsonDecode(event.data.toString());
+          } else {
+            // Si ya es un Map (común en Web), lo usamos directamente
+            data = event.data;
+          }
+          // 2. Acceder al valor de forma segura
+          String mensajeRecibido = data['mensaje'] ?? "Sin mensaje";
+
+          setState(() {
+            _mensaje = mensajeRecibido;
+          });
+
+          //_mostrarAlerta(mensajeRecibido);
+        },
+      );
+    }
+
   @override
+  void dispose() {
+    _pusherConfig.disconnect();
+    super.dispose();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -178,10 +217,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
             const Text("Historial de notificaciones"),
 
             const SizedBox(height: 6),
-            const Text(
-              "Toyota Corolla 2018 - ABC-1234",
-              style: TextStyle(color: Colors.grey),
-            ),
+            Text("Data: $_mensaje"),
           ],
         ),
       ),
