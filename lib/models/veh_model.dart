@@ -36,6 +36,6 @@ class VehiculoModel {
     if (imagen == null || imagen!.isEmpty) return '';
     if (imagen!.startsWith('http')) return imagen!;
     // Ajustamos a la ruta de almacenamiento de Laravel
-    return 'http://127.0.0.1:8000/storage/$imagen';
+    return 'https://taller-backend-final-production.up.railway.app/storage/$imagen';
   }
 }
