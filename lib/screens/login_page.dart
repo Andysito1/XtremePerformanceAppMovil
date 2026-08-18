@@ -3,8 +3,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
+import '../services/notifications_service.dart';
 import '../utils/dio_client.dart';
 
 class LoginPage extends StatefulWidget {
@@ -218,21 +218,40 @@ class _LoginPageState extends State<LoginPage> {
                               return;
                             }
 
-                            final token = await AuthService().login(
+                            final resultado = await AuthService().login(
                               _usuarioController.text,
                               _passwordController.text,
                             );
 
-                            if (token != null) {
-                              final prefs =
-                                  await SharedPreferences.getInstance();
-                              await prefs.setString('token', token);
-
+                            if (resultado != null) {
                               // Configurar el token en Dio para las peticiones inmediatas
                               DioClient.dio.options.headers['Authorization'] =
-                                  'Bearer $token';
+                                  'Bearer ${resultado.token}';
 
-                              context.go("/seguimiento");
+                              // Registramos el token push AHORA que ya hay sesión
+                              // autenticada (antes del login, la petición fallaba
+                              // silenciosamente por falta de Authorization).
+                              NotificationService().getToken();
+
+                              if (!context.mounted) return;
+
+                              switch (resultado.rolNombre) {
+                                case 'MECANICO':
+                                  context.go('/mecanico');
+                                  break;
+                                case 'ADMIN':
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Los administradores deben usar el panel web.',
+                                      ),
+                                    ),
+                                  );
+                                  context.go('/seguimiento');
+                                  break;
+                                default:
+                                  context.go('/seguimiento');
+                              }
                             } else {
                               // Error de login
                               ScaffoldMessenger.of(context).showSnackBar(

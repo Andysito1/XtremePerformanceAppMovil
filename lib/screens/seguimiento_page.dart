@@ -1,5 +1,6 @@
 // seguimiento_page.dart
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:xtreme_performance/models/usuario_model.dart';
@@ -8,6 +9,7 @@ import '../models/veh_model.dart';
 import '../services/usuario_service.dart';
 import '../services/seguimiento_service.dart';
 import '../models/etapa_model.dart';
+import '../theme/theme_provider.dart';
 
 class SeguimientoPage extends StatefulWidget {
   final String? ordenId;
@@ -25,6 +27,7 @@ class _SeguimientoPageState extends State<SeguimientoPage>
   String _tituloOrden = "Servicio Actual";
   int _vehiculoSeleccionado = 0;
   bool _cargando = true;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -34,10 +37,19 @@ class _SeguimientoPageState extends State<SeguimientoPage>
     ); // Añadir observador del ciclo de vida
     _cargarVehiculos();
     _usuarioInformacion();
+
+    // Refresco silencioso automático cada 5 segundos, sin alertas ni
+    // indicadores de carga, para reflejar avances del taller en tiempo real.
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_vehiculos.isNotEmpty) {
+        _cargarSeguimiento(_vehiculos[_vehiculoSeleccionado].id);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this); // Remover observador
     super.dispose();
   }
@@ -119,7 +131,6 @@ class _SeguimientoPageState extends State<SeguimientoPage>
     final vehiculo = hayVehiculos ? _vehiculos[_vehiculoSeleccionado] : null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         backgroundColor: const Color(0xFF404040),
         elevation: 0,
@@ -133,12 +144,20 @@ class _SeguimientoPageState extends State<SeguimientoPage>
             fontWeight: FontWeight.w600,
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.dark_mode_outlined, color: Colors.white),
-        //     onPressed: () {}, // Visual only
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: ValueListenableBuilder<ThemeMode>(
+              valueListenable: ThemeProvider.instance.themeMode,
+              builder: (context, mode, __) => Icon(
+                mode == ThemeMode.dark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                color: Colors.white,
+              ),
+            ),
+            onPressed: () => ThemeProvider.instance.toggle(),
+          ),
+        ],
       ),
 
       // drawer
@@ -280,10 +299,25 @@ class _SeguimientoPageState extends State<SeguimientoPage>
         ),
       ),
 
-      body: _cargando
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _cargarVehiculos();
+          if (_vehiculos.isNotEmpty) {
+            await _cargarSeguimiento(_vehiculos[_vehiculoSeleccionado].id);
+          }
+        },
+        color: const Color(0xFFE53935),
+        child: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _vehiculos.isEmpty
-          ? const Center(child: Text("No tienes vehículos registrados"))
+          ? ListView(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(top: 200),
+                  child: Center(child: Text("No tienes vehículos registrados")),
+                ),
+              ],
+            )
           : ListView(
               padding: EdgeInsets.zero,
               children: [
@@ -374,11 +408,9 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                         Container(
                           height: 220,
                           width: double.infinity,
-                          child:
-                              (vehiculo.imagen != null &&
-                                  vehiculo.imagen!.isNotEmpty)
+                          child: vehiculo.fullImagenUrl.isNotEmpty
                               ? Image.network(
-                                  vehiculo.imagen!,
+                                  vehiculo.fullImagenUrl,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
                                       _buildCarPlaceholder(220, isHeader: true),
@@ -483,12 +515,6 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/chat');
-        },
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
     );
   }

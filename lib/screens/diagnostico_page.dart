@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
+import '../models/evidencia_model.dart';
+import '../widgets/evidencias_section.dart';
 
 class DiagnosticoPage extends StatefulWidget {
   final String? ordenId;
@@ -22,6 +24,7 @@ class _DiagnosticoPageState extends State<DiagnosticoPage> {
   String _estadoGeneral = 'en_proceso';
   String _descripcionDiagnostico = "Cargando descripción...";
   String _fechaDiagnostico = "--/--/----";
+  List<EvidenciaModel> _evidencias = [];
 
   @override
   void initState() {
@@ -53,6 +56,10 @@ class _DiagnosticoPageState extends State<DiagnosticoPage> {
 
         _descripcionDiagnostico =
             data['descripcion'] ?? 'Sin descripción disponible.';
+
+        _evidencias = ((diagnosticoEtapa?['evidencias'] as List<dynamic>?) ?? [])
+            .map((e) => EvidenciaModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
 
         // Formatear la fecha recibida del backend
         final rawDate = data['updated_at'];
@@ -115,7 +122,6 @@ class _DiagnosticoPageState extends State<DiagnosticoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -161,6 +167,8 @@ class _DiagnosticoPageState extends State<DiagnosticoPage> {
                     const SizedBox(height: 24),
                     _buildNotesBox(),
                     const SizedBox(height: 24),
+                    EvidenciasSection(evidencias: _evidencias),
+                    if (_evidencias.isNotEmpty) const SizedBox(height: 24),
                     if (_validacionStatus == 'aprobado')
                       _buildSuccessPanel()
                     else if (_validacionStatus == 'aclaracion')
@@ -179,13 +187,6 @@ class _DiagnosticoPageState extends State<DiagnosticoPage> {
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/chat');
-        },
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-      ),
     );
   }
 

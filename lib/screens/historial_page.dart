@@ -6,6 +6,7 @@ import '../models/usuario_model.dart';
 import '../services/historial_service.dart';
 import '../services/veh_service.dart';
 import '../services/usuario_service.dart';
+import '../theme/theme_provider.dart';
 
 class HistorialPage extends StatefulWidget {
   const HistorialPage({super.key});
@@ -107,7 +108,6 @@ class _HistorialPageState extends State<HistorialPage>
     final vehiculo = hayVehiculos ? _vehiculos[_vehiculoSeleccionado] : null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         backgroundColor: const Color(0xFF404040),
         elevation: 0,
@@ -121,12 +121,20 @@ class _HistorialPageState extends State<HistorialPage>
             fontWeight: FontWeight.w600,
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.dark_mode_outlined, color: Colors.white),
-        //     onPressed: () {}, // Visual only
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: ValueListenableBuilder<ThemeMode>(
+              valueListenable: ThemeProvider.instance.themeMode,
+              builder: (context, mode, __) => Icon(
+                mode == ThemeMode.dark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                color: Colors.white,
+              ),
+            ),
+            onPressed: () => ThemeProvider.instance.toggle(),
+          ),
+        ],
       ),
       drawer: _buildDrawer(context, vehiculo),
       body: RefreshIndicator(
@@ -163,13 +171,6 @@ class _HistorialPageState extends State<HistorialPage>
                       : _buildHistorialList(),
                 ],
               ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/chat');
-        },
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
     );
   }
@@ -544,11 +545,9 @@ class _HistorialPageState extends State<HistorialPage>
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child:
-                            (vehiculo.imagen != null &&
-                                vehiculo.imagen!.isNotEmpty)
+                        child: vehiculo.fullImagenUrl.isNotEmpty
                             ? Image.network(
-                                vehiculo.imagen!,
+                                vehiculo.fullImagenUrl,
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,

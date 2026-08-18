@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
+import '../models/evidencia_model.dart';
+import '../widgets/evidencias_section.dart';
 
 class FinalPage extends StatefulWidget {
   final String? ordenId;
@@ -18,6 +20,7 @@ class _FinalPageState extends State<FinalPage> {
   String _estadoEtapa = 'pendiente';
   String _fechaActualizacion = "--/--/----";
   String _descripcionFinal = "Cargando detalles de entrega...";
+  List<EvidenciaModel> _evidencias = [];
 
   @override
   void initState() {
@@ -44,6 +47,10 @@ class _FinalPageState extends State<FinalPage> {
         _descripcionFinal =
             data['descripcion'] ?? 'Revisión final y entrega del vehículo.';
 
+        _evidencias = ((finalEtapa?['evidencias'] as List<dynamic>?) ?? [])
+            .map((e) => EvidenciaModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+
         final rawDate = finalEtapa != null
             ? finalEtapa['updated_at']
             : data['updated_at'];
@@ -66,7 +73,6 @@ class _FinalPageState extends State<FinalPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -108,6 +114,8 @@ class _FinalPageState extends State<FinalPage> {
                     const SizedBox(height: 24),
                     _buildNotesBox(),
                     const SizedBox(height: 24),
+                    EvidenciasSection(evidencias: _evidencias),
+                    if (_evidencias.isNotEmpty) const SizedBox(height: 24),
                     _buildStatusTimeline(),
                     const SizedBox(height: 24),
                     _buildApprovalPanel(context),
@@ -115,11 +123,6 @@ class _FinalPageState extends State<FinalPage> {
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/chat'),
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-      ),
     );
   }
 

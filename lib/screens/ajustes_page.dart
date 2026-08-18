@@ -7,6 +7,7 @@ import '../services/usuario_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/dio_client.dart';
 import '../services/notifications_service.dart';
+import '../theme/theme_provider.dart';
 
 class AjustesPage extends StatefulWidget {
   const AjustesPage({super.key});
@@ -55,6 +56,7 @@ class _AjustesPageState extends State<AjustesPage> {
         _ajustesOriginales = ajustes;
         _notificacionesActivas = ajustes.notificacionesActivas;
         _isLightTheme = ajustes.tema.toLowerCase() == 'claro';
+        ThemeProvider.instance.setDarkMode(!_isLightTheme);
       } else {
         // Valores por defecto si no hay configuración previa
         _notificacionesActivas = true;
@@ -107,24 +109,6 @@ class _AjustesPageState extends State<AjustesPage> {
     }
   }
 
-  void _showChangePasswordModal() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Cambiar Contraseña"),
-        content: const Text(
-          "Esta funcionalidad aún no está disponible.\n\nContacta con el taller para solicitar un cambio de contraseña.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Entendido"),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _cerrarSesion() async {
     try {
       // 1. Intentamos informar al backend (con un tiempo límite)
@@ -151,7 +135,6 @@ class _AjustesPageState extends State<AjustesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         backgroundColor: const Color(0xFF404040),
         elevation: 0,
@@ -165,22 +148,28 @@ class _AjustesPageState extends State<AjustesPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.dark_mode_outlined, color: Colors.white),
-        //     onPressed: () {}, // Visual only
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: ValueListenableBuilder<ThemeMode>(
+              valueListenable: ThemeProvider.instance.themeMode,
+              builder: (context, mode, __) => Icon(
+                mode == ThemeMode.dark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                color: Colors.white,
+              ),
+            ),
+            onPressed: () {
+              final nuevoModoOscuro = !ThemeProvider.instance.isDarkMode;
+              setState(() => _isLightTheme = !nuevoModoOscuro);
+              ThemeProvider.instance.setDarkMode(nuevoModoOscuro);
+              _guardarConfiguracion();
+            },
+          ),
+        ],
       ),
       drawer: _buildDrawer(),
       body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/chat');
-        },
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-      ),
     );
   }
 
@@ -250,22 +239,6 @@ class _AjustesPageState extends State<AjustesPage> {
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
               ),
             ),
-            _buildDivider(),
-            // Cambiar contraseña
-            ListTile(
-              leading: const Icon(Icons.lock_outline, color: Colors.grey),
-              title: const Text('Cambiar contraseña'),
-              subtitle: Text(
-                'Actualiza tu clave de acceso',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-              ),
-              trailing: const Icon(
-                Icons.chevron_right,
-                color: Colors.grey,
-                size: 24,
-              ),
-              onTap: _showChangePasswordModal,
-            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -328,6 +301,7 @@ class _AjustesPageState extends State<AjustesPage> {
               value: _isLightTheme,
               onChanged: (value) {
                 setState(() => _isLightTheme = value);
+                ThemeProvider.instance.setDarkMode(!value);
                 _guardarConfiguracion(); // Guardado automático
               },
               activeColor: const Color(0xFFE53935),

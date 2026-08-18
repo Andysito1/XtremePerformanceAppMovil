@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
+import '../models/evidencia_model.dart';
+import '../widgets/evidencias_section.dart';
 
 class PruebasPage extends StatefulWidget {
   final String? ordenId;
@@ -17,6 +19,7 @@ class _PruebasPageState extends State<PruebasPage> {
   bool _isLoadingData = true;
   String _estadoEtapa = 'pendiente';
   String _fechaActualizacion = "--/--/----";
+  List<EvidenciaModel> _evidencias = [];
 
   @override
   void initState() {
@@ -43,6 +46,10 @@ class _PruebasPageState extends State<PruebasPage> {
             ? pruebasEtapa['estado']
             : 'pendiente';
 
+        _evidencias = ((pruebasEtapa?['evidencias'] as List<dynamic>?) ?? [])
+            .map((e) => EvidenciaModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+
         final rawDate = pruebasEtapa != null
             ? pruebasEtapa['updated_at']
             : data['updated_at'];
@@ -65,7 +72,6 @@ class _PruebasPageState extends State<PruebasPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -107,16 +113,13 @@ class _PruebasPageState extends State<PruebasPage> {
                     const SizedBox(height: 24),
                     _buildNotesBox(),
                     const SizedBox(height: 24),
+                    EvidenciasSection(evidencias: _evidencias),
+                    if (_evidencias.isNotEmpty) const SizedBox(height: 24),
                     _buildStatusTimeline(),
                   ],
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/chat'),
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-      ),
     );
   }
 

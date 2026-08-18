@@ -7,6 +7,7 @@ import 'package:xtreme_performance/models/veh_model.dart';
 import 'package:xtreme_performance/services/notifications_service.dart';
 import 'package:xtreme_performance/services/usuario_service.dart';
 import 'package:xtreme_performance/services/veh_service.dart';
+import 'package:xtreme_performance/theme/theme_provider.dart';
 
 class NotificacionesPage extends StatefulWidget {
   const NotificacionesPage({super.key});
@@ -92,7 +93,6 @@ class _NotificacionesPageState extends State<NotificacionesPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         backgroundColor: const Color(0xFF404040),
         elevation: 0,
@@ -115,22 +115,30 @@ class _NotificacionesPageState extends State<NotificacionesPage>
             );
           },
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(
-        //       Icons.dark_mode_outlined,
-        //       color: Colors.white,
-        //     ), // Visual only
-        //     onPressed: () {}, // Visual only
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: ValueListenableBuilder<ThemeMode>(
+              valueListenable: ThemeProvider.instance.themeMode,
+              builder: (context, mode, __) => Icon(
+                mode == ThemeMode.dark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                color: Colors.white,
+              ),
+            ),
+            onPressed: () => ThemeProvider.instance.toggle(),
+          ),
+        ],
       ),
       drawer: _buildDrawer(context),
       body:
           _notificationService.isLoading &&
               _notificationService.notifications.isEmpty
           ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
+          : RefreshIndicator(
+              onRefresh: () => _notificationService.fetchNotifications(),
+              color: const Color(0xFFE53935),
+              child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
@@ -210,12 +218,6 @@ class _NotificacionesPageState extends State<NotificacionesPage>
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/chat');
-        },
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
     );
   }
@@ -425,11 +427,9 @@ class _NotificacionesPageState extends State<NotificacionesPage>
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child:
-                            (vehiculo.imagen != null &&
-                                vehiculo.imagen!.isNotEmpty)
+                        child: vehiculo.fullImagenUrl.isNotEmpty
                             ? Image.network(
-                                vehiculo.imagen!,
+                                vehiculo.fullImagenUrl,
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,

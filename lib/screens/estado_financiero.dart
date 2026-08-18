@@ -1,6 +1,7 @@
 // estado financiero del cliente
 
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../models/veh_model.dart';
 import '../models/usuario_model.dart';
@@ -10,6 +11,7 @@ import '../services/usuario_service.dart';
 import '../services/finanza_service.dart';
 import '../models/historial_orden_model.dart';
 import '../services/historial_service.dart';
+import '../theme/theme_provider.dart';
 
 class EstFinancieroPage extends StatefulWidget {
   const EstFinancieroPage({super.key});
@@ -118,7 +120,6 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
         : "Servicio Actual";
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         backgroundColor: const Color(0xFF404040),
         elevation: 0,
@@ -132,12 +133,20 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.dark_mode_outlined, color: Colors.white),
-        //     onPressed: () {}, // Visual only
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: ValueListenableBuilder<ThemeMode>(
+              valueListenable: ThemeProvider.instance.themeMode,
+              builder: (context, mode, __) => Icon(
+                mode == ThemeMode.dark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                color: Colors.white,
+              ),
+            ),
+            onPressed: () => ThemeProvider.instance.toggle(),
+          ),
+        ],
       ),
 
       // menú desplegable
@@ -237,11 +246,9 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child:
-                              (vehiculo.imagen != null &&
-                                  vehiculo.imagen!.isNotEmpty)
+                          child: vehiculo.fullImagenUrl.isNotEmpty
                               ? Image.network(
-                                  vehiculo.imagen!,
+                                  vehiculo.fullImagenUrl,
                                   width: 50,
                                   height: 50,
                                   fit: BoxFit.cover,
@@ -281,10 +288,26 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
         ),
       ),
 
-      body: _cargando
+      body: RefreshIndicator(
+        onRefresh: () async {
+          if (vehiculo != null) {
+            await _cargarFinanzas(vehiculo.id, ordenId: _ordenSeleccionadaId);
+          } else {
+            await _cargarVehiculos();
+          }
+        },
+        color: const Color(0xFFE53935),
+        child: _cargando
           ? const Center(child: CircularProgressIndicator())
           : vehiculo == null
-          ? const Center(child: Text("No tienes vehículos registrados"))
+          ? ListView(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(top: 200),
+                  child: Center(child: Text("No tienes vehículos registrados")),
+                ),
+              ],
+            )
           : ListView(
               padding: EdgeInsets.zero,
               children: [
@@ -312,11 +335,9 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child:
-                              (vehiculo.imagen != null &&
-                                  vehiculo.imagen!.isNotEmpty)
+                          child: vehiculo.fullImagenUrl.isNotEmpty
                               ? Image.network(
-                                  vehiculo.imagen!,
+                                  vehiculo.fullImagenUrl,
                                   width: 56,
                                   height: 56,
                                   fit: BoxFit.cover,
@@ -442,6 +463,20 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
                 ),
 
                 const SizedBox(height: 24),
+
+                if (_finanzas.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      "Gráfico de Costos",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildGraficoBarras(),
+                  const SizedBox(height: 24),
+                ],
+
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -540,12 +575,99 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
                   ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/chat');
-        },
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildGraficoBarras() {
+    final double maxMonto = _finanzas
+        .map((f) => f.monto)
+        .fold(0.0, (a, b) => a > b ? a : b);
+    final double techo = maxMonto <= 0 ? 10 : maxMonto * 1.2;
+
+    return Container(
+      height: 220,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.fromLTRB(8, 20, 16, 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: BarChart(
+        BarChartData(
+          maxY: techo,
+          alignment: BarChartAlignment.spaceAround,
+          gridData: const FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final finanza = _finanzas[group.x.toInt()];
+                return BarTooltipItem(
+                  '${finanza.concepto}\nS/ ${finanza.monto.toStringAsFixed(2)}',
+                  const TextStyle(color: Colors.white, fontSize: 12),
+                );
+              },
+            ),
+          ),
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 28,
+                getTitlesWidget: (value, meta) {
+                  final index = value.toInt();
+                  if (index < 0 || index >= _finanzas.length) {
+                    return const SizedBox.shrink();
+                  }
+                  final concepto = _finanzas[index].concepto;
+                  final abreviado = concepto.length > 8
+                      ? '${concepto.substring(0, 8)}…'
+                      : concepto;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      abreviado,
+                      style: const TextStyle(fontSize: 9),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          barGroups: List.generate(_finanzas.length, (index) {
+            final finanza = _finanzas[index];
+            return BarChartGroupData(
+              x: index,
+              barRods: [
+                BarChartRodData(
+                  toY: finanza.monto,
+                  width: 22,
+                  borderRadius: BorderRadius.circular(4),
+                  color: finanza.tipo == 'base'
+                      ? Colors.blue.shade400
+                      : const Color(0xFFE53935),
+                ),
+              ],
+            );
+          }),
+        ),
       ),
     );
   }

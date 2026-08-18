@@ -6,6 +6,7 @@ class UsuarioModel {
   final String? password;
   final bool? activo;
   final DateTime created_at;
+  final String? rolNombre;
 
   UsuarioModel({
     required this.id,
@@ -15,6 +16,7 @@ class UsuarioModel {
     this.password,
     this.activo,
     required this.created_at,
+    this.rolNombre,
   });
 
   factory UsuarioModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class UsuarioModel {
       password: json['password'],
       activo: json['activo'],
       created_at: DateTime.parse(json['created_at']),
+      rolNombre: json['rol'] is Map ? json['rol']['nombre'] as String? : null,
     );
   }
 }

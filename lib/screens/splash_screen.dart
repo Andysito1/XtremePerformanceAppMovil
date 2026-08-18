@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,10 +13,26 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Simula un tiempo de carga de 3 segundos antes de ir al login
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        context.go('/login');
+    Future.delayed(const Duration(seconds: 2), () async {
+      if (!mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        if (mounted) context.go('/login');
+        return;
+      }
+
+      final rol = prefs.getString('user_role');
+      if (!mounted) return;
+
+      switch (rol) {
+        case 'MECANICO':
+          context.go('/mecanico');
+          break;
+        default:
+          context.go('/seguimiento');
       }
     });
   }

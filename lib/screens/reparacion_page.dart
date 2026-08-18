@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
+import '../models/evidencia_model.dart';
+import '../widgets/evidencias_section.dart';
 
 class ReparacionPage extends StatefulWidget {
   final String? ordenId;
@@ -18,6 +20,7 @@ class _ReparacionPageState extends State<ReparacionPage> {
   String _estadoGeneral = 'en_proceso';
   String _descripcionReparacion = "Cargando detalles de la reparación...";
   String _fechaActualizacion = "--/--/----";
+  List<EvidenciaModel> _evidencias = [];
 
   @override
   void initState() {
@@ -49,6 +52,10 @@ class _ReparacionPageState extends State<ReparacionPage> {
             data['descripcion'] ??
             'El vehículo se encuentra en el área de mecánica.';
 
+        _evidencias = ((reparacionEtapa?['evidencias'] as List<dynamic>?) ?? [])
+            .map((e) => EvidenciaModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+
         // Obtener la fecha de actualización específica de la etapa de reparación
         final rawDate = reparacionEtapa != null
             ? reparacionEtapa['updated_at']
@@ -72,7 +79,6 @@ class _ReparacionPageState extends State<ReparacionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -114,16 +120,13 @@ class _ReparacionPageState extends State<ReparacionPage> {
                     const SizedBox(height: 24),
                     _buildNotesBox(),
                     const SizedBox(height: 24),
+                    EvidenciasSection(evidencias: _evidencias),
+                    if (_evidencias.isNotEmpty) const SizedBox(height: 24),
                     _buildStatusTimeline(),
                   ],
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/chat'),
-        backgroundColor: const Color(0xFFE53935),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-      ),
     );
   }
 

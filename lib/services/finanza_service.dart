@@ -29,9 +29,17 @@ class FinanzaService {
             .map((o) => HistorialOrdenModel.fromJson(o))
             .toList();
 
+        // Calculamos el total sumando el propio desglose en vez de confiar en
+        // el campo 'total' del backend (costo_total de la orden), que puede
+        // desincronizarse del detalle real de finanzas_servicio.
+        final double totalCalculado = finanzas.fold(
+          0.0,
+          (sum, f) => sum + f.monto,
+        );
+
         return {
           'finanzas': finanzas,
-          'total': double.tryParse(response.data['total'].toString()) ?? 0.0,
+          'total': totalCalculado,
           'ordenes': ordenes,
           'orden_seleccionada': response.data['orden_seleccionada'],
         };
