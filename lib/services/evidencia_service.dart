@@ -57,4 +57,20 @@ class EvidenciaService {
       return false;
     }
   }
+
+  /// Elimina una evidencia. El backend solo lo permite al ADMIN o al mecánico
+  /// asignado a la orden dueña de esa evidencia.
+  Future<bool> eliminarEvidencia(int idEvidencia) async {
+    try {
+      await DioClient.setTokenHeader();
+      final response = await DioClient.dio.delete('/evidencias/$idEvidencia');
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      print('Error al eliminar evidencia: ${e.response?.data}');
+      return false;
+    } catch (e) {
+      print('Error inesperado al eliminar evidencia: $e');
+      return false;
+    }
+  }
 }

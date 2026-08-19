@@ -81,32 +81,9 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
     if (!mounted) return;
 
     if (exito) {
-      final nuevasEvidencias = await _evidenciaService.obtenerPorEtapa(
-        etapaId,
-      );
-      setState(() {
-        final etapasActualizadas = List<dynamic>.from(_etapas);
-        final index = etapasActualizadas.indexWhere(
-          (e) => (e['id'] ?? 0).toString() == etapaId.toString(),
-        );
-        if (index != -1) {
-          etapasActualizadas[index] = {
-            ...Map<String, dynamic>.from(etapasActualizadas[index]),
-            'evidencias': nuevasEvidencias
-                .map(
-                  (e) => {
-                    'id': e.id,
-                    'tipo': e.tipo,
-                    'url': e.url,
-                    'descripcion': e.descripcion,
-                  },
-                )
-                .toList(),
-          };
-          _orden = {..._orden!, 'etapas': etapasActualizadas};
-        }
-        _subiendoEtapaId = null;
-      });
+      await _refrescarEvidenciasEtapa(etapaId);
+      if (!mounted) return;
+      setState(() => _subiendoEtapaId = null);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -119,6 +96,56 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('No se pudo subir la evidencia. Intenta de nuevo.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _refrescarEvidenciasEtapa(int etapaId) async {
+    final nuevasEvidencias = await _evidenciaService.obtenerPorEtapa(etapaId);
+    if (!mounted) return;
+    setState(() {
+      final etapasActualizadas = List<dynamic>.from(_etapas);
+      final index = etapasActualizadas.indexWhere(
+        (e) => (e['id'] ?? 0).toString() == etapaId.toString(),
+      );
+      if (index != -1) {
+        etapasActualizadas[index] = {
+          ...Map<String, dynamic>.from(etapasActualizadas[index]),
+          'evidencias': nuevasEvidencias
+              .map(
+                (e) => {
+                  'id': e.id,
+                  'tipo': e.tipo,
+                  'url': e.url,
+                  'descripcion': e.descripcion,
+                },
+              )
+              .toList(),
+        };
+        _orden = {..._orden!, 'etapas': etapasActualizadas};
+      }
+    });
+  }
+
+  Future<void> _eliminarEvidencia(int etapaId, EvidenciaModel evidencia) async {
+    final exito = await _evidenciaService.eliminarEvidencia(evidencia.id);
+    if (!mounted) return;
+
+    if (exito) {
+      await _refrescarEvidenciasEtapa(etapaId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Evidencia eliminada'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo eliminar la evidencia. Intenta de nuevo.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -232,7 +259,10 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
           ),
           if (evidencias.isNotEmpty) ...[
             const SizedBox(height: 12),
-            EvidenciasSection(evidencias: evidencias),
+            EvidenciasSection(
+              evidencias: evidencias,
+              onDelete: (evidencia) => _eliminarEvidencia(etapaId, evidencia),
+            ),
           ],
           if (enProceso) ...[
             const SizedBox(height: 12),

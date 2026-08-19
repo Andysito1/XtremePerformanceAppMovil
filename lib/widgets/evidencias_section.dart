@@ -4,10 +4,20 @@ import '../models/evidencia_model.dart';
 /// Sección "Evidencias:" reutilizada en el detalle de cada etapa. Si no hay
 /// evidencias, no renderiza nada (según lo solicitado: "si no hay evidencias
 /// simplemente no aparecen").
+///
+/// [onDelete] es opcional: cuando se provee (solo en la pantalla del
+/// mecánico), se muestra un botón para borrar cada evidencia individual. En
+/// la vista del cliente se omite este parámetro y no aparece ninguna opción
+/// de borrado.
 class EvidenciasSection extends StatelessWidget {
   final List<EvidenciaModel> evidencias;
+  final Future<void> Function(EvidenciaModel evidencia)? onDelete;
 
-  const EvidenciasSection({super.key, required this.evidencias});
+  const EvidenciasSection({
+    super.key,
+    required this.evidencias,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,33 +56,88 @@ class EvidenciasSection extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => _openPreview(context, evidencia),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: esVideo
-            ? Container(
-                width: 90,
-                height: 90,
-                color: Colors.black87,
-                child: const Icon(
-                  Icons.play_circle_fill,
-                  color: Colors.white,
-                  size: 36,
-                ),
-              )
-            : Image.network(
-                evidencia.url,
-                width: 90,
-                height: 90,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 90,
-                  height: 90,
-                  color: Colors.grey.shade300,
-                  child: const Icon(Icons.broken_image),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: esVideo
+                ? Container(
+                    width: 90,
+                    height: 90,
+                    color: Colors.black87,
+                    child: const Icon(
+                      Icons.play_circle_fill,
+                      color: Colors.white,
+                      size: 36,
+                    ),
+                  )
+                : Image.network(
+                    evidencia.url,
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 90,
+                      height: 90,
+                      color: Colors.grey.shade300,
+                      child: const Icon(Icons.broken_image),
+                    ),
+                  ),
+          ),
+          if (onDelete != null)
+            Positioned(
+              top: -6,
+              right: -6,
+              child: GestureDetector(
+                onTap: () => _confirmarBorrado(context, evidencia),
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
               ),
+            ),
+        ],
       ),
     );
+  }
+
+  Future<void> _confirmarBorrado(
+    BuildContext context,
+    EvidenciaModel evidencia,
+  ) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar evidencia'),
+        content: const Text('¿Seguro que deseas eliminar esta evidencia?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(
+              'Eliminar',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado == true && onDelete != null) {
+      await onDelete!(evidencia);
+    }
   }
 
   void _openPreview(BuildContext context, EvidenciaModel evidencia) {
