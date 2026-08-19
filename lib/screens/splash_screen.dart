@@ -31,6 +31,9 @@ class _SplashScreenState extends State<SplashScreen> {
         case 'MECANICO':
           context.go('/mecanico');
           break;
+        case 'ADMIN':
+          context.go('/admin');
+          break;
         default:
           context.go('/seguimiento');
       }
@@ -39,21 +42,26 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.directions_car,
               size: 100,
-              color: Color(0xFF404040), // Azul corporativo
+              color: theme.colorScheme.onSurface,
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               "Cargando...",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 30),
             const CircularProgressIndicator(

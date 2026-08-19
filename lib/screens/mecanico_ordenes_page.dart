@@ -56,6 +56,7 @@ class _MecanicoOrdenesPageState extends State<MecanicoOrdenesPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF404040),
         elevation: 0,
+        automaticallyImplyLeading: false,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Mis órdenes asignadas',

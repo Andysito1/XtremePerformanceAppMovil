@@ -773,6 +773,7 @@ Widget _etapaServicio(
           // 7. Tarjeta de progreso
           Expanded(
             child: _buildEtapaCard(
+              context,
               titulo,
               estado,
               badgeBgColor,
@@ -826,6 +827,7 @@ Widget _buildTimelineElement(
 }
 
 Widget _buildEtapaCard(
+  BuildContext context,
   String titulo,
   String estado,
   Color badgeBgColor,
@@ -833,11 +835,12 @@ Widget _buildEtapaCard(
   String descripcion,
   String fecha,
 ) {
+  final theme = Theme.of(context);
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: theme.cardColor,
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -856,10 +859,10 @@ Widget _buildEtapaCard(
             Expanded(
               child: Text(
                 titulo,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
-                  color: Color(0xFF333333),
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ),
@@ -883,7 +886,7 @@ Widget _buildEtapaCard(
         const SizedBox(height: 8),
         Text(
           descripcion,
-          style: const TextStyle(fontSize: 13, color: Color(0xFF757575)),
+          style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),

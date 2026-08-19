@@ -16,6 +16,7 @@ import 'package:xtreme_performance/screens/reparacion_page.dart';
 import 'package:xtreme_performance/screens/seguimiento_page.dart';
 import 'package:xtreme_performance/screens/mecanico_ordenes_page.dart';
 import 'package:xtreme_performance/screens/mecanico_orden_detalle_page.dart';
+import 'package:xtreme_performance/screens/admin_dashboard_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/dio_client.dart';
 import 'services/notifications_service.dart';
@@ -158,6 +159,14 @@ final GoRouter appRouter = GoRouter(
           builder: (BuildContext context, GoRouterState state) {
             final orden = state.extra as Map<String, dynamic>?;
             return MecanicoOrdenDetallePage(orden: orden);
+          },
+        ),
+
+        // --- Ruta exclusiva del rol ADMIN ---
+        GoRoute(
+          path: 'admin',
+          builder: (BuildContext context, GoRouterState state) {
+            return const AdminDashboardPage();
           },
         ),
       ],

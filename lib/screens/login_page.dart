@@ -240,14 +240,7 @@ class _LoginPageState extends State<LoginPage> {
                                   context.go('/mecanico');
                                   break;
                                 case 'ADMIN':
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Los administradores deben usar el panel web.',
-                                      ),
-                                    ),
-                                  );
-                                  context.go('/seguimiento');
+                                  context.go('/admin');
                                   break;
                                 default:
                                   context.go('/seguimiento');
