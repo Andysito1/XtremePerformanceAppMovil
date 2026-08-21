@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:go_router/go_router.dart';
 import '../models/veh_model.dart';
 import '../models/usuario_model.dart';
 import '../models/finanza_model.dart';
@@ -11,7 +10,8 @@ import '../services/usuario_service.dart';
 import '../services/finanza_service.dart';
 import '../models/historial_orden_model.dart';
 import '../services/historial_service.dart';
-import '../theme/theme_provider.dart';
+import '../theme/app_colors.dart';
+import '../widgets/app_drawer.dart';
 
 class EstFinancieroPage extends StatefulWidget {
   const EstFinancieroPage({super.key});
@@ -121,7 +121,10 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -133,159 +136,13 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: ValueListenableBuilder<ThemeMode>(
-              valueListenable: ThemeProvider.instance.themeMode,
-              builder: (context, mode, __) => Icon(
-                mode == ThemeMode.dark
-                    ? Icons.light_mode_outlined
-                    : Icons.dark_mode_outlined,
-                color: Colors.white,
-              ),
-            ),
-            onPressed: () => ThemeProvider.instance.toggle(),
-          ),
-        ],
       ),
 
       // menú desplegable
-      drawer: Drawer(
-        child: Container(
-          color: const Color(0xFF404040),
-          child: Column(
-            children: [
-              // HEADER
-              Container(
-                color: const Color(0xFFE53935),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 24,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Xtreme Performance",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _usuarios.isNotEmpty
-                                ? _usuarios[0].nombre
-                                : "Cliente",
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              _drawerItem(
-                context,
-                icon: Icons.directions_car,
-                text: "Seguimiento del vehículo",
-                route: "/seguimiento",
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.attach_money,
-                text: "Estado financiero",
-                route: "/estadoFinanciero",
-                selected: true,
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.history,
-                text: "Historial del vehículo",
-                route: "/historial",
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.notifications,
-                text: "Notificaciones",
-                route: "/notificaciones",
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.settings,
-                text: "Ajustes",
-                route: "/ajustes",
-              ),
-
-              const Spacer(),
-
-              // VEHÍCULO
-              if (vehiculo != null)
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF565656),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: vehiculo.fullImagenUrl.isNotEmpty
-                              ? Image.network(
-                                  vehiculo.fullImagenUrl,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      _buildCarPlaceholder(50),
-                                )
-                              : _buildCarPlaceholder(50),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${vehiculo.marca} ${vehiculo.modelo}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Placa: ${vehiculo.placa}",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+      drawer: AppDrawer(
+        currentRoute: '/estadoFinanciero',
+        usuarioNombre: _usuarios.isNotEmpty ? _usuarios[0].nombre : 'Cliente',
+        vehiculo: vehiculo,
       ),
 
       body: RefreshIndicator(
@@ -321,13 +178,13 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF404040),
+                      gradient: AppColors.darkGradient,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: AppColors.dark.withOpacity(0.35),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
@@ -427,36 +284,49 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF404040),
+                    gradient: AppColors.darkGradient,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+                        color: AppColors.dark.withOpacity(0.35),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Text(
-                        "Total: $tituloOrdenActual",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                      Positioned(
+                        right: -10,
+                        top: -10,
+                        child: Icon(
+                          Icons.account_balance_wallet_rounded,
+                          size: 90,
+                          color: Colors.white.withOpacity(0.06),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "S/ ${_totalDeuda.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Total: $tituloOrdenActual",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "S/ ${_totalDeuda.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -828,35 +698,8 @@ class _EstFinancieroPageState extends State<EstFinancieroPage> {
     return Container(
       width: size,
       height: size,
-      color: const Color.fromARGB(255, 54, 54, 54),
+      color: AppColors.darkElevated,
       child: const Icon(Icons.directions_car, color: Colors.white),
     );
   }
-}
-
-// drawer
-Widget _drawerItem(
-  BuildContext context, {
-  required IconData icon,
-  required String text,
-  required String route,
-  bool selected = false,
-}) {
-  return InkWell(
-    onTap: () {
-      Navigator.pop(context);
-      context.go(route);
-    },
-    child: Container(
-      color: selected ? Colors.white.withOpacity(0.1) : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 14),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 14)),
-        ],
-      ),
-    ),
-  );
 }

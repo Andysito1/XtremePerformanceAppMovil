@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../models/historial_orden_model.dart';
 import '../models/veh_model.dart';
 import '../models/usuario_model.dart';
 import '../services/historial_service.dart';
 import '../services/veh_service.dart';
 import '../services/usuario_service.dart';
-import '../theme/theme_provider.dart';
+import '../theme/app_colors.dart';
+import '../widgets/app_drawer.dart';
 
 class HistorialPage extends StatefulWidget {
   const HistorialPage({super.key});
@@ -109,7 +109,10 @@ class _HistorialPageState extends State<HistorialPage>
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -121,22 +124,12 @@ class _HistorialPageState extends State<HistorialPage>
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: ValueListenableBuilder<ThemeMode>(
-              valueListenable: ThemeProvider.instance.themeMode,
-              builder: (context, mode, __) => Icon(
-                mode == ThemeMode.dark
-                    ? Icons.light_mode_outlined
-                    : Icons.dark_mode_outlined,
-                color: Colors.white,
-              ),
-            ),
-            onPressed: () => ThemeProvider.instance.toggle(),
-          ),
-        ],
       ),
-      drawer: _buildDrawer(context, vehiculo),
+      drawer: AppDrawer(
+        currentRoute: '/historial',
+        usuarioNombre: _usuarios.isNotEmpty ? _usuarios[0].nombre : 'Cliente',
+        vehiculo: vehiculo,
+      ),
       body: RefreshIndicator(
         onRefresh: () => _cargarHistorial(vehiculo!.id),
         color: const Color(0xFFE53935),
@@ -182,13 +175,13 @@ class _HistorialPageState extends State<HistorialPage>
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF404040),
+          gradient: AppColors.darkGradient,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: AppColors.dark.withOpacity(0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -320,7 +313,19 @@ class _HistorialPageState extends State<HistorialPage>
       ),
       child: Row(
         children: [
-          const Icon(Icons.receipt_long, color: Color(0xFF404040), size: 32),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.dark.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.receipt_long_rounded,
+              color: AppColors.dark,
+              size: 24,
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -349,7 +354,7 @@ class _HistorialPageState extends State<HistorialPage>
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: Color(0xFFE53935),
+              color: AppColors.red,
             ),
           ),
         ],
@@ -440,182 +445,8 @@ class _HistorialPageState extends State<HistorialPage>
     return Container(
       width: size,
       height: size,
-      color: const Color.fromARGB(255, 54, 54, 54),
+      color: AppColors.darkElevated,
       child: const Icon(Icons.directions_car, color: Colors.white),
-    );
-  }
-
-  Drawer _buildDrawer(BuildContext context, VehiculoModel? vehiculo) {
-    return Drawer(
-      child: Container(
-        color: const Color(0xFF404040),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              color: const Color(0xFFE53935),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 16,
-                bottom: 24,
-                left: 16,
-                right: 16,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Xtreme Performance",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _usuarios.isNotEmpty
-                              ? _usuarios[0].nombre
-                              : "Cliente",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-
-            // Drawer Items
-            _drawerItem(
-              context,
-              icon: Icons.directions_car,
-              text: "Seguimiento del vehículo",
-              route: "/seguimiento",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.attach_money,
-              text: "Estado financiero",
-              route: "/estadoFinanciero",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.history,
-              text: "Historial del vehículo",
-              route: "/historial",
-              selected: true,
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.notifications,
-              text: "Notificaciones",
-              route: "/notificaciones",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.settings,
-              text: "Ajustes",
-              route: "/ajustes",
-            ),
-
-            const Spacer(),
-
-            // Selected Vehicle
-            if (vehiculo != null)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF565656),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: vehiculo.fullImagenUrl.isNotEmpty
-                            ? Image.network(
-                                vehiculo.fullImagenUrl,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _buildCarPlaceholder(50),
-                              )
-                            : _buildCarPlaceholder(50),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Placa: ${vehiculo.placa}",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _drawerItem(
-    BuildContext context, {
-    required IconData icon,
-    required String text,
-    required String route,
-    bool selected = false,
-  }) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        if (!selected) context.go(route);
-      },
-      child: Container(
-        color: selected ? Colors.white.withOpacity(0.1) : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 14),
-            Text(
-              text,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

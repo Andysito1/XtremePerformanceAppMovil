@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
 import '../models/evidencia_model.dart';
+import '../theme/app_colors.dart';
 import '../widgets/evidencias_section.dart';
 
 class ReparacionPage extends StatefulWidget {
@@ -131,24 +132,15 @@ class _ReparacionPageState extends State<ReparacionPage> {
   }
 
   Widget _buildHeaderImage(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.28,
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.26,
       width: double.infinity,
-      child: Image.network(
-        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2072&auto=format&fit=crop",
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // Respaldo para la etapa de reparación
-          return Container(
-            color: const Color(0xFF404040),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.build_circle_outlined,
-              color: Colors.white,
-              size: 50,
-            ),
-          );
-        },
+      decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.build_circle_outlined,
+        color: Colors.white,
+        size: 64,
       ),
     );
   }
@@ -176,7 +168,7 @@ class _ReparacionPageState extends State<ReparacionPage> {
                 width: 50,
                 height: 50,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF404040),
+                  color: AppColors.dark,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

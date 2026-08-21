@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/mecanico_service.dart';
 import '../services/notifications_service.dart';
-import '../theme/theme_provider.dart';
+import '../theme/app_colors.dart';
 import '../utils/dio_client.dart';
 
 class MecanicoOrdenesPage extends StatefulWidget {
@@ -54,7 +54,10 @@ class _MecanicoOrdenesPageState extends State<MecanicoOrdenesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         automaticallyImplyLeading: false,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -63,18 +66,6 @@ class _MecanicoOrdenesPageState extends State<MecanicoOrdenesPage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         actions: [
-          IconButton(
-            icon: ValueListenableBuilder<ThemeMode>(
-              valueListenable: ThemeProvider.instance.themeMode,
-              builder: (context, mode, __) => Icon(
-                mode == ThemeMode.dark
-                    ? Icons.light_mode_outlined
-                    : Icons.dark_mode_outlined,
-                color: Colors.white,
-              ),
-            ),
-            onPressed: () => ThemeProvider.instance.toggle(),
-          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _cerrarSesion,
@@ -112,35 +103,82 @@ class _MecanicoOrdenesPageState extends State<MecanicoOrdenesPage> {
   Widget _buildOrdenCard(BuildContext context, Map<String, dynamic> orden) {
     final vehiculo = orden['vehiculo'] as Map<String, dynamic>?;
     final estado = (orden['estado'] ?? 'en_proceso').toString();
+    final Color estadoColor = estado == 'finalizado'
+        ? Colors.green
+        : (estado == 'pausado' ? Colors.orange : Colors.blueGrey);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(14),
-        title: Text(
-          orden['titulo']?.toString() ?? 'Orden #${orden['id']}',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        context.push('/mecanico/orden', extra: orden);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: Text(
-            vehiculo != null
-                ? '${vehiculo['marca'] ?? ''} ${vehiculo['modelo'] ?? ''} · Placa ${vehiculo['placa'] ?? ''}'
-                : 'Vehículo no disponible',
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: AppColors.dark.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.directions_car_rounded,
+                color: AppColors.dark,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    orden['titulo']?.toString() ?? 'Orden #${orden['id']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    vehiculo != null
+                        ? '${vehiculo['marca'] ?? ''} ${vehiculo['modelo'] ?? ''} · Placa ${vehiculo['placa'] ?? ''}'
+                        : 'Vehículo no disponible',
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: estadoColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                estado.replaceAll('_', ' '),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: estadoColor,
+                ),
+              ),
+            ),
+          ],
         ),
-        trailing: Chip(
-          label: Text(
-            estado.replaceAll('_', ' '),
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
-          backgroundColor: estado == 'finalizado'
-              ? Colors.green
-              : (estado == 'pausado' ? Colors.orange : Colors.blueGrey),
-        ),
-        onTap: () {
-          context.push('/mecanico/orden', extra: orden);
-        },
       ),
     );
   }

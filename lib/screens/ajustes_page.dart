@@ -7,7 +7,8 @@ import '../services/usuario_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/dio_client.dart';
 import '../services/notifications_service.dart';
-import '../theme/theme_provider.dart';
+import '../theme/app_colors.dart';
+import '../widgets/app_drawer.dart';
 
 class AjustesPage extends StatefulWidget {
   const AjustesPage({super.key});
@@ -27,7 +28,6 @@ class _AjustesPageState extends State<AjustesPage> {
   // Variables para controlar los inputs de la UI
   bool _notificacionesActivas = true;
   bool _silenciarAlertas = false; // UI-only por ahora
-  bool _isLightTheme = true;
 
   @override
   void initState() {
@@ -55,12 +55,9 @@ class _AjustesPageState extends State<AjustesPage> {
       if (ajustes != null) {
         _ajustesOriginales = ajustes;
         _notificacionesActivas = ajustes.notificacionesActivas;
-        _isLightTheme = ajustes.tema.toLowerCase() == 'claro';
-        ThemeProvider.instance.setDarkMode(!_isLightTheme);
       } else {
         // Valores por defecto si no hay configuración previa
         _notificacionesActivas = true;
-        _isLightTheme = true;
       }
     } catch (e) {
       print("Error cargando configuración: $e");
@@ -94,7 +91,7 @@ class _AjustesPageState extends State<AjustesPage> {
     final nuevosAjustes = AjustesModel(
       id: _ajustesOriginales?.id,
       idCliente: _ajustesOriginales?.idCliente,
-      tema: _isLightTheme ? 'claro' : 'oscuro',
+      tema: 'claro',
       notificacionesActivas: _notificacionesActivas,
     );
 
@@ -136,7 +133,10 @@ class _AjustesPageState extends State<AjustesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -148,27 +148,11 @@ class _AjustesPageState extends State<AjustesPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: ValueListenableBuilder<ThemeMode>(
-              valueListenable: ThemeProvider.instance.themeMode,
-              builder: (context, mode, __) => Icon(
-                mode == ThemeMode.dark
-                    ? Icons.light_mode_outlined
-                    : Icons.dark_mode_outlined,
-                color: Colors.white,
-              ),
-            ),
-            onPressed: () {
-              final nuevoModoOscuro = !ThemeProvider.instance.isDarkMode;
-              setState(() => _isLightTheme = !nuevoModoOscuro);
-              ThemeProvider.instance.setDarkMode(nuevoModoOscuro);
-              _guardarConfiguracion();
-            },
-          ),
-        ],
       ),
-      drawer: _buildDrawer(),
+      drawer: AppDrawer(
+        currentRoute: '/ajustes',
+        usuarioNombre: _usuario?.nombre ?? 'Cliente',
+      ),
       body: _buildBody(),
     );
   }
@@ -178,70 +162,70 @@ class _AjustesPageState extends State<AjustesPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    final inicial = (_usuario?.nombre.trim().isNotEmpty ?? false)
+        ? _usuario!.nombre.trim()[0].toUpperCase()
+        : 'U';
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
       children: [
-        // 1. Cabecera
-        const Text(
-          'Ajustes',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Configuración de la aplicación',
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-        ),
-        const SizedBox(height: 30),
-
-        // --- SECCIÓN CUENTA ---
-        _buildSectionTitle('CUENTA'),
-        _buildCard(
-          children: [
-            // 3. Perfil de Usuario
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE53935),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.person, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _usuario?.nombre ?? 'Usuario',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        // 1. Banner de perfil (hero)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: AppColors.darkGradient,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.dark.withOpacity(0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
-            ),
-            _buildDivider(),
-            // Correo (Visualización)
-            ListTile(
-              leading: const Icon(Icons.email_outlined, color: Colors.grey),
-              title: const Text('Correo electrónico'),
-              subtitle: Text(
-                _usuario?.correo ?? 'No disponible',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+            ],
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: AppColors.red,
+                child: Text(
+                  inicial,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _usuario?.nombre ?? 'Usuario',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _usuario?.correo ?? 'No disponible',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.75),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
 
         // --- SECCIÓN NOTIFICACIONES ---
         _buildSectionTitle('NOTIFICACIONES'),
@@ -285,43 +269,32 @@ class _AjustesPageState extends State<AjustesPage> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-
-        // --- SECCIÓN APARIENCIA ---
-        _buildSectionTitle('APARIENCIA'),
-        _buildCard(
-          children: [
-            SwitchListTile(
-              secondary: const Icon(Icons.palette_outlined, color: Colors.grey),
-              title: const Text('Modo claro'),
-              subtitle: Text(
-                'Alternar entre tema claro y oscuro',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-              ),
-              value: _isLightTheme,
-              onChanged: (value) {
-                setState(() => _isLightTheme = value);
-                ThemeProvider.instance.setDarkMode(!value);
-                _guardarConfiguracion(); // Guardado automático
-              },
-              activeColor: const Color(0xFFE53935),
-            ),
-          ],
-        ),
         const SizedBox(height: 40),
 
         // 4. Botón de Acción Principal (Cerrar Sesión)
-        SizedBox(
+        Container(
           width: double.infinity,
           height: 50,
+          decoration: BoxDecoration(
+            gradient: AppColors.redGradient,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.red.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: _cerrarSesion,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53935),
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
               ),
-              elevation: 2,
+              elevation: 0,
             ),
             icon: const Icon(Icons.logout, color: Colors.white),
             label: const Text(
@@ -369,129 +342,4 @@ class _AjustesPageState extends State<AjustesPage> {
     return const Divider(height: 1, thickness: 0.5, indent: 16, endIndent: 16);
   }
 
-  Drawer _buildDrawer() {
-    return Drawer(
-      child: Container(
-        color: const Color(0xFF404040),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              color: const Color(0xFFE53935),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 16,
-                bottom: 24,
-                left: 16,
-                right: 16,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Xtreme Performance",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _usuario?.nombre ?? "Cliente",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.directions_car,
-              text: "Seguimiento del vehículo",
-              route: "/seguimiento",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.attach_money,
-              text: "Estado financiero",
-              route: "/estadoFinanciero",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.history,
-              text: "Historial del vehículo",
-              route: "/historial",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.notifications,
-              text: "Notificaciones",
-              route: "/notificaciones",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.settings,
-              text: "Ajustes",
-              route: "/ajustes",
-              selected: true,
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                "Versión 1.0.0",
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// drawer item helper
-Widget _drawerItem(
-  BuildContext context, {
-  required IconData icon,
-  required String text,
-  required String route,
-  bool selected = false,
-}) {
-  return InkWell(
-    onTap: () {
-      Navigator.pop(context);
-      // Solo navega si no está en la ruta actual
-      if (!selected) {
-        context.go(route);
-      }
-    },
-    child: Container(
-      color: selected ? Colors.white.withOpacity(0.1) : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 14),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 14)),
-        ],
-      ),
-    ),
-  );
 }

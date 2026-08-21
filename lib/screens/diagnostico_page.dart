@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
 import '../models/evidencia_model.dart';
+import '../theme/app_colors.dart';
 import '../widgets/evidencias_section.dart';
 
 class DiagnosticoPage extends StatefulWidget {
@@ -191,24 +192,15 @@ class _DiagnosticoPageState extends State<DiagnosticoPage> {
   }
 
   Widget _buildHeaderImage(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.28,
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.26,
       width: double.infinity,
-      child: Image.network(
-        "https://images.unsplash.com/photo-1486006391894-ca83b749666c?q=80&w=2072&auto=format&fit=crop",
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // Si la imagen falla (404), mostramos un fondo sólido con un icono
-          return Container(
-            color: const Color(0xFF404040),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.assignment_outlined,
-              color: Colors.white,
-              size: 50,
-            ),
-          );
-        },
+      decoration: const BoxDecoration(gradient: AppColors.redGradient),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.assignment_outlined,
+        color: Colors.white,
+        size: 64,
       ),
     );
   }

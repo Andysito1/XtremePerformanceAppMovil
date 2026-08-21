@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:xtreme_performance/models/notification_model.dart';
 import 'package:xtreme_performance/models/usuario_model.dart';
 import 'package:xtreme_performance/models/veh_model.dart';
 import 'package:xtreme_performance/services/notifications_service.dart';
 import 'package:xtreme_performance/services/usuario_service.dart';
 import 'package:xtreme_performance/services/veh_service.dart';
-import 'package:xtreme_performance/theme/theme_provider.dart';
+import 'package:xtreme_performance/theme/app_colors.dart';
+import 'package:xtreme_performance/widgets/app_drawer.dart';
 
 class NotificacionesPage extends StatefulWidget {
   const NotificacionesPage({super.key});
@@ -94,7 +94,10 @@ class _NotificacionesPageState extends State<NotificacionesPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -115,22 +118,14 @@ class _NotificacionesPageState extends State<NotificacionesPage>
             );
           },
         ),
-        actions: [
-          IconButton(
-            icon: ValueListenableBuilder<ThemeMode>(
-              valueListenable: ThemeProvider.instance.themeMode,
-              builder: (context, mode, __) => Icon(
-                mode == ThemeMode.dark
-                    ? Icons.light_mode_outlined
-                    : Icons.dark_mode_outlined,
-                color: Colors.white,
-              ),
-            ),
-            onPressed: () => ThemeProvider.instance.toggle(),
-          ),
-        ],
       ),
-      drawer: _buildDrawer(context),
+      drawer: AppDrawer(
+        currentRoute: '/notificaciones',
+        usuarioNombre: _usuario?.nombre ?? 'Cliente',
+        vehiculo: _vehiculos.isNotEmpty
+            ? _vehiculos[_vehiculoSeleccionado]
+            : null,
+      ),
       body:
           _notificationService.isLoading &&
               _notificationService.notifications.isEmpty
@@ -236,8 +231,13 @@ class _NotificacionesPageState extends State<NotificacionesPage>
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white, // Fondo blanco como se solicitó
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: !notification.isRead
+                ? const Border(
+                    left: BorderSide(color: AppColors.red, width: 3),
+                  )
+                : null,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04), // Sombra más sutil
@@ -299,7 +299,7 @@ class _NotificacionesPageState extends State<NotificacionesPage>
                   height: 8,
                   margin: const EdgeInsets.only(left: 8, top: 4),
                   decoration: const BoxDecoration(
-                    color: Colors.red,
+                    color: AppColors.red,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -322,182 +322,4 @@ class _NotificacionesPageState extends State<NotificacionesPage>
     );
   }
 
-  Widget _buildCarPlaceholder(double size) {
-    return Container(
-      width: size,
-      height: size,
-      color: const Color.fromARGB(255, 54, 54, 54),
-      child: const Icon(Icons.directions_car, color: Colors.white, size: 24),
-    );
-  }
-
-  Drawer _buildDrawer(BuildContext context) {
-    final bool hayVehiculos = _vehiculos.isNotEmpty;
-    final vehiculo = hayVehiculos ? _vehiculos[_vehiculoSeleccionado] : null;
-
-    return Drawer(
-      child: Container(
-        color: const Color(0xFF404040),
-        child: Column(
-          children: [
-            Container(
-              color: const Color(0xFFE53935),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 16,
-                bottom: 24,
-                left: 16,
-                right: 16,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Xtreme Performance",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _usuario?.nombre ?? "Cliente",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.directions_car,
-              text: "Seguimiento del vehículo",
-              route: "/seguimiento",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.attach_money,
-              text: "Estado financiero",
-              route: "/estadoFinanciero",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.history,
-              text: "Historial del vehículo",
-              route: "/historial",
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.notifications,
-              text: "Notificaciones",
-              route: "/notificaciones",
-              selected: true,
-            ),
-            _drawerItem(
-              context,
-              icon: Icons.settings,
-              text: "Ajustes",
-              route: "/ajustes",
-            ),
-            const Spacer(),
-
-            // Bloque del vehículo seleccionado (Item debajo del drawer)
-            if (vehiculo != null)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF565656),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: vehiculo.fullImagenUrl.isNotEmpty
-                            ? Image.network(
-                                vehiculo.fullImagenUrl,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _buildCarPlaceholder(50),
-                              )
-                            : _buildCarPlaceholder(50),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${vehiculo.marca} ${vehiculo.modelo}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Placa: ${vehiculo.placa}",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-Widget _drawerItem(
-  BuildContext context, {
-  required IconData icon,
-  required String text,
-  required String route,
-  bool selected = false,
-}) {
-  return InkWell(
-    onTap: () {
-      Navigator.pop(context);
-      if (!selected) {
-        context.go(route);
-      }
-    },
-    child: Container(
-      color: selected ? Colors.white.withOpacity(0.1) : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 14),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 14)),
-        ],
-      ),
-    ),
-  );
 }

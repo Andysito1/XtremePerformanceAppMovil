@@ -9,7 +9,8 @@ import '../models/veh_model.dart';
 import '../services/usuario_service.dart';
 import '../services/seguimiento_service.dart';
 import '../models/etapa_model.dart';
-import '../theme/theme_provider.dart';
+import '../theme/app_colors.dart';
+import '../widgets/app_drawer.dart';
 
 class SeguimientoPage extends StatefulWidget {
   final String? ordenId;
@@ -132,7 +133,10 @@ class _SeguimientoPageState extends State<SeguimientoPage>
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -144,159 +148,13 @@ class _SeguimientoPageState extends State<SeguimientoPage>
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: ValueListenableBuilder<ThemeMode>(
-              valueListenable: ThemeProvider.instance.themeMode,
-              builder: (context, mode, __) => Icon(
-                mode == ThemeMode.dark
-                    ? Icons.light_mode_outlined
-                    : Icons.dark_mode_outlined,
-                color: Colors.white,
-              ),
-            ),
-            onPressed: () => ThemeProvider.instance.toggle(),
-          ),
-        ],
       ),
 
       // drawer
-      drawer: Drawer(
-        child: Container(
-          color: const Color(0xFF404040),
-          child: Column(
-            children: [
-              // header
-              Container(
-                color: const Color(0xFFE53935),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 24,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Xtreme Performance",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _usuarios.isNotEmpty
-                                ? _usuarios[0].nombre
-                                : "Cliente",
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              _drawerItem(
-                context,
-                icon: Icons.directions_car,
-                text: "Seguimiento del vehículo",
-                route: "/seguimiento",
-                selected: true,
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.attach_money,
-                text: "Estado financiero",
-                route: "/estadoFinanciero",
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.history,
-                text: "Historial del vehículo",
-                route: "/historial",
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.notifications,
-                text: "Notificaciones",
-                route: "/notificaciones",
-              ),
-              _drawerItem(
-                context,
-                icon: Icons.settings,
-                text: "Ajustes",
-                route: "/ajustes",
-              ),
-
-              const Spacer(),
-
-              // VEHÍCULO seleccionado en drawer
-              if (vehiculo != null)
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 86, 86, 86),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: (vehiculo.fullImagenUrl.isNotEmpty)
-                              ? Image.network(
-                                  vehiculo.fullImagenUrl,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _buildCarPlaceholder(50),
-                                )
-                              : _buildCarPlaceholder(50),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Placa: ${vehiculo.placa}",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+      drawer: AppDrawer(
+        currentRoute: '/seguimiento',
+        usuarioNombre: _usuarios.isNotEmpty ? _usuarios[0].nombre : 'Cliente',
+        vehiculo: vehiculo,
       ),
 
       body: RefreshIndicator(
@@ -332,20 +190,20 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF404040),
+                        gradient: AppColors.darkGradient,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                            color: AppColors.dark.withOpacity(0.35),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
                       child: Row(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             child: (vehiculo.fullImagenUrl.isNotEmpty)
                                 ? Image.network(
                                     vehiculo.fullImagenUrl,
@@ -385,7 +243,7 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                             width: 36,
                             height: 36,
                             decoration: const BoxDecoration(
-                              color: Colors.red,
+                              color: AppColors.red,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -402,28 +260,43 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                 // 3. Header con imagen del vehículo
                 if (vehiculo != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 16, bottom: 24),
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 220,
-                          width: double.infinity,
-                          child: vehiculo.fullImagenUrl.isNotEmpty
-                              ? Image.network(
-                                  vehiculo.fullImagenUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      _buildCarPlaceholder(220, isHeader: true),
-                                )
-                              : _buildCarPlaceholder(220, isHeader: true),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: _buildHeaderOverlay(vehiculo),
+                        child: Stack(
+                          children: [
+                            SizedBox(
+                              height: 210,
+                              width: double.infinity,
+                              child: vehiculo.fullImagenUrl.isNotEmpty
+                                  ? Image.network(
+                                      vehiculo.fullImagenUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildCarPlaceholder(210, isHeader: true),
+                                    )
+                                  : _buildCarPlaceholder(210, isHeader: true),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: _buildHeaderOverlay(vehiculo),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
 
@@ -431,25 +304,38 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.timeline_rounded,
+                          color: AppColors.red,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             "Seguimiento del Servicio",
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF333333),
+                              color: Color(0xFF1B2430),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
                             _tituloOrden,
                             style: const TextStyle(
-                              color: Color(0xFFE53935),
-                              fontSize: 14,
+                              color: AppColors.red,
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -504,13 +390,22 @@ class _SeguimientoPageState extends State<SeguimientoPage>
                   ),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF0F0), // Rosado muy claro
+                    color: AppColors.red.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFFCDD2)),
+                    border: Border.all(color: AppColors.red.withOpacity(0.25)),
                   ),
-                  child: const Text(
-                    "Nota: Puedes hacer clic en cada etapa para ver más detalles.",
-                    style: TextStyle(fontSize: 13, color: Color(0xFFD32F2F)),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline, size: 18, color: AppColors.redDark),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          "Puedes hacer clic en cada etapa para ver más detalles.",
+                          style: TextStyle(fontSize: 13, color: AppColors.redDark),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -523,7 +418,7 @@ class _SeguimientoPageState extends State<SeguimientoPage>
     return Container(
       width: isHeader ? double.infinity : size,
       height: size,
-      decoration: const BoxDecoration(color: Color.fromARGB(255, 54, 54, 54)),
+      decoration: const BoxDecoration(color: AppColors.darkElevated),
       child: const Icon(Icons.directions_car, color: Colors.white, size: 30),
     );
   }
@@ -686,33 +581,6 @@ class _SeguimientoPageState extends State<SeguimientoPage>
   }
 }
 
-// drawer item
-Widget _drawerItem(
-  BuildContext context, {
-  required IconData icon,
-  required String text,
-  required String route,
-  bool selected = false,
-}) {
-  return InkWell(
-    onTap: () {
-      Navigator.pop(context);
-      context.go(route);
-    },
-    child: Container(
-      color: selected ? Colors.white.withOpacity(0.1) : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 14),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 14)),
-        ],
-      ),
-    ),
-  );
-}
-
 // etapa del servicio
 Widget _etapaServicio(
   BuildContext context, {
@@ -793,11 +661,12 @@ Widget _buildTimelineElement(
   bool isInProgress,
   IconData icon,
 ) {
+  final lineColor = isCompleted ? Colors.green.shade400 : Colors.grey.shade300;
   return SizedBox(
     width: 50,
     child: Column(
       children: [
-        Container(width: 2, height: 20, color: Colors.grey.shade300),
+        Container(width: 3, height: 20, color: lineColor),
         Container(
           width: 44,
           height: 44,
@@ -810,7 +679,18 @@ Widget _buildTimelineElement(
             shape: BoxShape.circle,
             border: Border.all(
               color: isCompleted ? Colors.green : Colors.transparent,
+              width: 2,
             ),
+            boxShadow: isCompleted || isInProgress
+                ? [
+                    BoxShadow(
+                      color: (isCompleted ? Colors.green : Colors.orange)
+                          .withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
           child: Icon(
             icon,
@@ -820,7 +700,7 @@ Widget _buildTimelineElement(
             size: 20,
           ),
         ),
-        Container(width: 2, height: 60, color: Colors.grey.shade300),
+        Container(width: 3, height: 60, color: lineColor),
       ],
     ),
   );

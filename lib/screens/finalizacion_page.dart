@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../services/orden_service.dart';
 import '../models/evidencia_model.dart';
+import '../theme/app_colors.dart';
 import '../widgets/evidencias_section.dart';
 
 class FinalPage extends StatefulWidget {
@@ -127,24 +128,15 @@ class _FinalPageState extends State<FinalPage> {
   }
 
   Widget _buildHeaderImage(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.28,
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.26,
       width: double.infinity,
-      child: Image.network(
-        "https://images.unsplash.com/photo-1494906109159-d6091c6f7454?q=80&w=2070&auto=format&fit=crop",
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // Respaldo para la etapa final
-          return Container(
-            color: const Color(0xFF404040),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.check_circle_outline,
-              color: Colors.white,
-              size: 50,
-            ),
-          );
-        },
+      decoration: const BoxDecoration(gradient: AppColors.redGradient),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.check_circle_outline,
+        color: Colors.white,
+        size: 64,
       ),
     );
   }

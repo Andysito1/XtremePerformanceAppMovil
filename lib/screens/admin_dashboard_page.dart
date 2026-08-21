@@ -5,6 +5,7 @@ import '../models/dashboard_resumen_model.dart';
 import '../services/dashboard_service.dart';
 import '../services/notifications_service.dart';
 import '../services/solicitud_reserva_service.dart';
+import '../theme/app_colors.dart';
 import '../theme/theme_provider.dart';
 import '../utils/dio_client.dart';
 
@@ -121,7 +122,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
         elevation: 0,
         automaticallyImplyLeading: false,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -189,31 +193,72 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   const SizedBox(height: 16),
                   if (_resumen != null) _buildResumenCards(_resumen!),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Filtrar órdenes',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _filtroClienteCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Cliente',
-                      prefixIcon: Icon(Icons.person_outline),
-                      border: OutlineInputBorder(),
-                      isDense: true,
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _filtroPlacaCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Placa',
-                      prefixIcon: Icon(Icons.directions_car_outlined),
-                      border: OutlineInputBorder(),
-                      isDense: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: AppColors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.filter_alt_outlined,
+                                color: AppColors.red,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              'Filtrar órdenes',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _filtroClienteCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Cliente',
+                            prefixIcon: Icon(Icons.person_outline),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _filtroPlacaCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Placa',
+                            prefixIcon: Icon(Icons.directions_car_outlined),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ],
                     ),
-                    onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -330,19 +375,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        border: Border.all(color: Colors.grey.withOpacity(0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.15),
-            child: Icon(icon, color: color, size: 20),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +409,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   valor,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 17,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -373,21 +430,90 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final vehiculo = orden['vehiculo'] as Map<String, dynamic>?;
     final cliente = vehiculo?['cliente']?['usuario']?['nombre'] ?? 'N/A';
     final etapa = (orden['etapa_actual'] ?? orden['estado'] ?? '').toString();
+    final bool finalizado = etapa == 'finalizado';
+    final Color etapaColor = finalizado ? Colors.green : Colors.blueGrey;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        title: Text(orden['titulo']?.toString() ?? 'Orden #${orden['id']}'),
-        subtitle: Text(
-          '$cliente · ${vehiculo?['marca'] ?? ''} ${vehiculo?['modelo'] ?? ''} (${vehiculo?['placa'] ?? '-'})',
-        ),
-        trailing: Chip(
-          label: Text(
-            _nombresEtapa[etapa] ?? etapa,
-            style: const TextStyle(fontSize: 11, color: Colors.white),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-          backgroundColor: etapa == 'finalizado' ? Colors.green : Colors.blueGrey,
-        ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.dark.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.directions_car_rounded,
+              color: AppColors.dark,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  orden['titulo']?.toString() ?? 'Orden #${orden['id']}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$cliente · ${vehiculo?['marca'] ?? ''} ${vehiculo?['modelo'] ?? ''} (${vehiculo?['placa'] ?? '-'})',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: etapaColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: etapaColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _nombresEtapa[etapa] ?? etapa,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: etapaColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

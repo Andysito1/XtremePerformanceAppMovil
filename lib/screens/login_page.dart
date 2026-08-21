@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/auth_service.dart';
 import '../services/notifications_service.dart';
+import '../theme/theme_provider.dart';
 import '../utils/dio_client.dart';
 
 class LoginPage extends StatefulWidget {
@@ -232,6 +233,11 @@ class _LoginPageState extends State<LoginPage> {
                               // autenticada (antes del login, la petición fallaba
                               // silenciosamente por falta de Authorization).
                               NotificationService().getToken();
+
+                              // Solo Admin conserva el control de tema.
+                              if (resultado.rolNombre != 'ADMIN') {
+                                ThemeProvider.instance.setDarkMode(false);
+                              }
 
                               if (!context.mounted) return;
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/evidencia_model.dart';
 import '../services/evidencia_service.dart';
+import '../theme/app_colors.dart';
 import '../widgets/evidencias_section.dart';
 
 class MecanicoOrdenDetallePage extends StatefulWidget {
@@ -158,11 +159,15 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF404040),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.darkGradient),
+        ),
+        elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           _orden?['titulo']?.toString() ?? 'Detalle de orden',
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
       body: _orden == null
@@ -170,33 +175,69 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          vehiculo != null
-                              ? '${vehiculo['marca'] ?? ''} ${vehiculo['modelo'] ?? ''}'
-                              : 'Vehículo no disponible',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.darkGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.dark.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        if (vehiculo != null)
-                          Text('Placa: ${vehiculo['placa'] ?? '-'}'),
-                        const SizedBox(height: 8),
-                        Text(
-                          _orden?['descripcion']?.toString() ?? '',
-                          style: TextStyle(color: Colors.grey.shade700),
+                        child: const Icon(
+                          Icons.directions_car_rounded,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              vehiculo != null
+                                  ? '${vehiculo['marca'] ?? ''} ${vehiculo['modelo'] ?? ''}'
+                                  : 'Vehículo no disponible',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (vehiculo != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'Placa: ${vehiculo['placa'] ?? '-'}',
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              ),
+                            ],
+                            if ((_orden?['descripcion']?.toString() ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                _orden!['descripcion'].toString(),
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 const Text(
                   'Etapas del servicio',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -225,13 +266,23 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
         .map((e) => EvidenciaModel.fromJson(Map<String, dynamic>.from(e)))
         .toList();
 
+    final Color estadoColor = estado == 'completado'
+        ? Colors.green
+        : (enProceso ? Colors.blue : Colors.grey);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,14 +297,20 @@ class _MecanicoOrdenDetallePageState extends State<MecanicoOrdenDetallePage> {
                   fontSize: 15,
                 ),
               ),
-              Chip(
-                label: Text(
-                  estado.replaceAll('_', ' '),
-                  style: const TextStyle(fontSize: 11, color: Colors.white),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: estadoColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                backgroundColor: estado == 'completado'
-                    ? Colors.green
-                    : (enProceso ? Colors.blue : Colors.grey),
+                child: Text(
+                  estado.replaceAll('_', ' '),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: estadoColor,
+                  ),
+                ),
               ),
             ],
           ),

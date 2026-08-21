@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/theme_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,6 +27,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final rol = prefs.getString('user_role');
       if (!mounted) return;
+
+      // Solo Admin conserva el control de tema; Cliente/Mecánico siempre
+      // arrancan en claro, sin importar la preferencia guardada.
+      if (rol != 'ADMIN') {
+        ThemeProvider.instance.setDarkMode(false);
+      }
 
       switch (rol) {
         case 'MECANICO':
