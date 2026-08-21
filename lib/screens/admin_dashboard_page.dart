@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/dashboard_resumen_model.dart';
 import '../services/dashboard_service.dart';
 import '../services/notifications_service.dart';
+import '../services/solicitud_reserva_service.dart';
 import '../theme/theme_provider.dart';
 import '../utils/dio_client.dart';
 
@@ -30,6 +31,7 @@ class AdminDashboardPage extends StatefulWidget {
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   final DashboardService _dashboardService = DashboardService();
+  final SolicitudReservaService _solicitudReservaService = SolicitudReservaService();
   final TextEditingController _filtroClienteCtrl = TextEditingController();
   final TextEditingController _filtroPlacaCtrl = TextEditingController();
 
@@ -39,11 +41,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   DashboardResumenModel? _resumen;
   bool _cargando = true;
+  int _solicitudesPendientesBase = 0;
 
   @override
   void initState() {
     super.initState();
     _cargarResumen();
+    _cargarSolicitudesPendientes();
+  }
+
+  Future<void> _cargarSolicitudesPendientes() async {
+    final count = await _solicitudReservaService.getPendientesCount();
+    if (mounted) setState(() => _solicitudesPendientesBase = count);
+  }
+
+  Future<void> _abrirSolicitudes() async {
+    await context.push('/admin/solicitudes');
+    NotificationService().resetPendingSolicitudesCount();
+    _cargarSolicitudesPendientes();
   }
 
   @override
@@ -115,6 +130,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         actions: [
+          ListenableBuilder(
+            listenable: NotificationService(),
+            builder: (context, __) {
+              final total = _solicitudesPendientesBase +
+                  NotificationService().pendingSolicitudesCount;
+              return IconButton(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.notifications_outlined, color: Colors.white),
+                    if (total > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                onPressed: _abrirSolicitudes,
+              );
+            },
+          ),
           IconButton(
             icon: ValueListenableBuilder<ThemeMode>(
               valueListenable: ThemeProvider.instance.themeMode,

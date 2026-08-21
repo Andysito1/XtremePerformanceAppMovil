@@ -27,6 +27,15 @@ class NotificationService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get hasError => _hasError;
 
+  /// Contador de solicitudes de reserva nuevas recibidas mientras la app está
+  /// abierta (para el punto rojo de la campanita del panel ADMIN).
+  int pendingSolicitudesCount = 0;
+
+  void resetPendingSolicitudesCount() {
+    pendingSolicitudesCount = 0;
+    notifyListeners();
+  }
+
   /// Canal de notificación para Android (Requerido para Heads-up notifications)
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'high_importance_channel',
@@ -140,6 +149,11 @@ class NotificationService extends ChangeNotifier {
       // Verificamos si el usuario tiene silenciadas las alertas localmente
       final prefs = await SharedPreferences.getInstance();
       final bool silenciado = prefs.getBool('silenciar_alertas') ?? false;
+
+      if (message.data['tipo'] == 'solicitud_reserva') {
+        pendingSolicitudesCount++;
+        notifyListeners();
+      }
 
       if (notification != null) {
         // Insertar en la lista local para actualización en tiempo real de la UI

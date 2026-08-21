@@ -17,6 +17,7 @@ import 'package:xtreme_performance/screens/seguimiento_page.dart';
 import 'package:xtreme_performance/screens/mecanico_ordenes_page.dart';
 import 'package:xtreme_performance/screens/mecanico_orden_detalle_page.dart';
 import 'package:xtreme_performance/screens/admin_dashboard_page.dart';
+import 'package:xtreme_performance/screens/solicitudes_reserva_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/dio_client.dart';
 import 'services/notifications_service.dart';
@@ -162,11 +163,18 @@ final GoRouter appRouter = GoRouter(
           },
         ),
 
-        // --- Ruta exclusiva del rol ADMIN ---
+        // --- Rutas exclusivas del rol ADMIN ---
         GoRoute(
           path: 'admin',
           builder: (BuildContext context, GoRouterState state) {
             return const AdminDashboardPage();
+          },
+        ),
+
+        GoRoute(
+          path: 'admin/solicitudes',
+          builder: (BuildContext context, GoRouterState state) {
+            return const SolicitudesReservaPage();
           },
         ),
       ],
